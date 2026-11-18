@@ -1,1 +1,37 @@
-
+use client";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { CERTIFICATIONS } from "@/data/portfolioData";
+import { Certification } from "@/types";
+import CertificationModal from "@/components/CertificationModal";
+import { Award, ShieldCheck, Play, Pause, RotateCw, ExternalLink, Sparkles } from "lucide-react";
+import { Award, ShieldCheck, ExternalLink, Sparkles } from "lucide-react";
+export default function Certifications() {
+  const [activeModalCert, setActiveModalCert] = useState<Certification | null>(null);
+        <p className="mt-4 text-white/60 font-space text-sm sm:text-base max-w-2xl mx-auto">
+          Interactive 3D cylindrical token ring. Drag horizontally to rotate or click any credential to verify cryptographic hash on the immutable ledger.
+        </p>
+        {/* Auto-Spin Toggle Button */}
+        <div className="mt-6 flex items-center justify-center gap-3">
+          <button
+            onClick={() => setAutoSpinEnabled(!autoSpinEnabled)}
+            data-magnetic
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-mono uppercase tracking-wider transition-all duration-300 border ${
+              autoSpinEnabled
+                ? "bg-[#c40024]/20 border-[#ff1744]/50 text-[#ff1744] shadow-[0_0_15px_rgba(196,0,36,0.3)]"
+                : "bg-white/5 border-white/10 text-white/60 hover:text-white"
+            }`}
+          >
+            {autoSpinEnabled ? (
+              <>
+                <Pause className="w-3.5 h-3.5" />
+                <span>[ AUTO-SPIN ON ]</span>
+              </>
+            ) : (
+              <>
+                <Play className="w-3.5 h-3.5" />
+                <span>[ AUTO-SPIN PAUSED ]</span>
+              </>
+            )}
+          </button>
+        </div>
+      </div>
