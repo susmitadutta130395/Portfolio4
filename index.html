@@ -1,1 +1,1963 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title>Susmita Dutta | Cyberpunk Portfolio & 3D Interactive Engine</title>
+  <meta name="description" content="Award-winning dark cyberpunk portfolio of Susmita Dutta — Business Development Manager, Operations Manager, Social Media Manager & Content Strategist.">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            cyber: {
+              bg: '#030303',
+              surface: '#090909',
+              card: '#0d0d10',
+              border: 'rgba(255, 255, 255, 0.08)',
+              red: '#c40024',
+              brightRed: '#e0002a',
+              neon: '#ff1744',
+              text: '#f5f5f5',
+              muted: '#8e8e99',
+              cyan: '#00e5ff',
+              green: '#00ff88',
+              gold: '#ffd700',
+            }
+          },
+          fontFamily: {
+            display: ['Syne', 'sans-serif'],
+            syne: ['Syne', 'sans-serif'],
+            outfit: ['Outfit', 'sans-serif'],
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            space: ['Space Grotesk', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Lenis Smooth Scrolling -->
+  <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.42/bundled/lenis.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #030303;
+      --surface: #090909;
+      --accent-red: #c40024;
+      --bright-red: #e0002a;
+      --text: #f5f5f5;
+    }
+
+    /* Never put overflow: hidden on html or body to keep Lenis working smoothly */
+    html {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+      position: relative;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Selection */
+    ::selection {
+      background-color: var(--accent-red);
+      color: #ffffff;
+    }
+
+    /* Ambient red glowing scroll progress indicator bar at the top of the viewport */
+    #scroll-progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 0%;
+      height: 2px;
+      background: linear-gradient(90deg, #ff1744, #e0002a, #ff5252);
+      box-shadow: 0 0 14px #ff1744, 0 0 4px #e0002a;
+      z-index: 9999;
+      pointer-events: none;
+      transition: width 0.05s ease-out;
+    }
+
+    /* 1. CINEMATIC OVERLAYS */
+    .cine-vignette {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 10;
+      background: radial-gradient(ellipse at center, rgba(3, 3, 3, 0.2) 0%, rgba(3, 3, 3, 0.65) 60%, rgba(0, 0, 0, 0.94) 100%);
+    }
+
+    #cine-glow {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 11;
+      background: radial-gradient(circle 600px at var(--glow-x, 50%) var(--glow-y, 50%), rgba(196, 0, 36, 0.18), transparent 70%);
+      mix-blend-mode: screen;
+      transition: background 0.04s linear;
+    }
+
+    .cine-grain {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 12;
+      opacity: 0.038;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      animation: grain-jitter 0.8s steps(4) infinite;
+    }
+
+    @keyframes grain-jitter {
+      0% { transform: translate(0, 0); }
+      25% { transform: translate(-2px, 2px); }
+      50% { transform: translate(2px, -1px); }
+      75% { transform: translate(-1px, -2px); }
+      100% { transform: translate(0, 0); }
+    }
+
+    .cine-scan {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 13;
+      opacity: 0.12;
+      background: repeating-linear-gradient(to bottom, transparent 0px, transparent 2px, rgba(0, 0, 0, 0.35) 3px, rgba(0, 0, 0, 0.35) 4px);
+    }
+
+    /* 3D DRAGGABLE GALLERY UTILS */
+    .touch-pan-y {
+      touch-action: pan-y;
+    }
+
+    .preserve-3d {
+      transform-style: preserve-3d;
+      -webkit-transform-style: preserve-3d;
+    }
+
+    .backface-hidden {
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+
+    /* Hero Watermark */
+    .hero-watermark {
+      -webkit-text-stroke: 2px rgba(196, 0, 36, 0.35);
+      text-shadow: 0 0 50px rgba(196, 0, 36, 0.18);
+      color: transparent;
+      user-select: none;
+    }
+
+    /* Custom Cursor */
+    @media (hover: hover) and (pointer: fine) {
+      body, a, button {
+        cursor: none !important;
+      }
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #030303;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #222226;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #c40024;
+    }
+  </style>
+</head>
+<body class="bg-[#030303] text-[#f5f5f5]">
+
+  <!-- Ambient Red Scroll Progress Indicator -->
+  <div id="scroll-progress-bar"></div>
+
+  <!-- Custom Cursor System (Fine Pointers) -->
+  <div id="cursor-dot" class="fixed top-0 left-0 w-2 h-2 -ml-1 -mt-1 rounded-full bg-[#ff1744] pointer-events-none z-[9999] opacity-0 transition-opacity duration-200"></div>
+  <div id="cursor-ring" class="fixed top-0 left-0 w-8 h-8 -ml-4 -mt-4 rounded-full border border-[#ff1744]/50 pointer-events-none z-[9998] opacity-0 transition-all duration-200 ease-out"></div>
+
+  <!-- Signature 1: CINEMATIC CURSOR & SCROLL VIDEO ENGINE -->
+  <div class="fixed inset-0 w-full h-full overflow-hidden pointer-events-none z-0">
+    <div id="cine-video-container" class="w-full h-full relative will-change-transform transition-transform duration-75 ease-out" style="transform: scale(1.06) translate3d(0px, 0px, 0px) rotateX(0deg) rotateY(0deg);">
+      <video
+        id="cine-video"
+        playsinline
+        muted
+        preload="auto"
+        class="w-full h-full object-cover select-none pointer-events-none opacity-80"
+        style="filter: contrast(1.08) brightness(0.92);"
+      >
+        <source src="public/video/portfolio-background.mp4" type="video/mp4">
+        <source src="./public/video/portfolio-background.mp4" type="video/mp4">
+        <source src="/video/portfolio-background.mp4" type="video/mp4">
+      </video>
+    </div>
+
+    <!-- Cinematic Overlays -->
+    <div class="cine-vignette"></div>
+    <div id="cine-glow"></div>
+    <div class="cine-grain"></div>
+    <div class="cine-scan"></div>
+  </div>
+
+  <!-- Foreground Application Shell -->
+  <div class="relative z-20 flex flex-col min-h-screen">
+
+    <!-- FLOATING FROSTED GLASS NAVBAR -->
+    <header id="navbar" class="fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 lg:px-12 py-3 transition-all duration-300">
+      <div class="max-w-7xl mx-auto rounded-full px-5 py-2 sm:py-2.5 flex items-center justify-between border border-white/10 bg-[#09090c]/85 backdrop-blur-xl shadow-2xl">
+        <!-- Brand Logo -->
+        <a href="#hero" class="flex items-center gap-2 font-syne text-lg sm:text-xl font-bold tracking-tight text-white select-none">
+          <span class="p-1 rounded bg-[#c40024]/20 border border-[#c40024]/40 text-[#ff1744]">
+            <i data-lucide="terminal" class="w-3.5 h-3.5"></i>
+          </span>
+          <span>Susmita<span class="text-[#ff1744]">.</span></span>
+        </a>
+
+        <!-- Desktop Navigation -->
+        <nav class="hidden md:flex items-center gap-1 p-1 rounded-full bg-white/[0.03] border border-white/5 backdrop-blur-md">
+          <a href="#about" class="nav-item px-3.5 py-1.5 rounded-full text-xs font-mono tracking-wider text-white/60 hover:text-white transition-all">ABOUT</a>
+          <a href="#experience" class="nav-item px-3.5 py-1.5 rounded-full text-xs font-mono tracking-wider text-white/60 hover:text-white transition-all">EXPERIENCE</a>
+          <a href="#certifications" class="nav-item px-3.5 py-1.5 rounded-full text-xs font-mono tracking-wider text-white/60 hover:text-white transition-all">CERTIFICATIONS</a>
+          <a href="#projects" class="nav-item px-3.5 py-1.5 rounded-full text-xs font-mono tracking-wider text-white/60 hover:text-white transition-all">PROJECTS</a>
+          <a href="#skills" class="nav-item px-3.5 py-1.5 rounded-full text-xs font-mono tracking-wider text-white/60 hover:text-white transition-all">SKILLS</a>
+          <a href="#contact" class="nav-item px-3.5 py-1.5 rounded-full text-xs font-mono tracking-wider text-white/60 hover:text-white transition-all">CONTACT</a>
+        </nav>
+
+        <!-- CTA Button -->
+        <div class="hidden sm:flex items-center gap-3">
+          <a href="#contact" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/[0.06] hover:bg-[#c40024] border border-white/10 hover:border-transparent text-white text-[11px] font-mono font-medium tracking-wider uppercase transition-all duration-300">
+            <span>GET IN TOUCH</span>
+            <i data-lucide="arrow-up-right" class="w-3 h-3"></i>
+          </a>
+        </div>
+
+        <!-- Mobile Toggle -->
+        <button id="mobile-menu-btn" class="md:hidden p-2 text-white/80 hover:text-white" aria-label="Toggle Navigation">
+          <i data-lucide="menu" class="w-6 h-6"></i>
+        </button>
+      </div>
+
+      <!-- Mobile Dropdown Drawer -->
+      <div id="mobile-menu" class="hidden md:hidden mt-3 p-6 rounded-2xl bg-[#09090c]/95 backdrop-blur-2xl border border-white/10 shadow-2xl flex flex-col gap-4">
+        <a href="#about" class="mobile-link text-sm font-mono tracking-wider text-white/80 hover:text-[#ff1744] py-2 border-b border-white/5">ABOUT</a>
+        <a href="#experience" class="mobile-link text-sm font-mono tracking-wider text-white/80 hover:text-[#ff1744] py-2 border-b border-white/5">EXPERIENCE</a>
+        <a href="#certifications" class="mobile-link text-sm font-mono tracking-wider text-white/80 hover:text-[#ff1744] py-2 border-b border-white/5">CERTIFICATIONS</a>
+        <a href="#projects" class="mobile-link text-sm font-mono tracking-wider text-white/80 hover:text-[#ff1744] py-2 border-b border-white/5">PROJECTS</a>
+        <a href="#skills" class="mobile-link text-sm font-mono tracking-wider text-white/80 hover:text-[#ff1744] py-2 border-b border-white/5">SKILLS</a>
+        <a href="#contact" class="mobile-link text-sm font-mono tracking-wider text-white/80 hover:text-[#ff1744] py-2 border-b border-white/5">CONTACT</a>
+      </div>
+    </header>
+
+    <!-- SECTION 4: EDITORIAL HERO SECTION -->
+    <section id="hero" class="relative min-h-[92vh] w-full flex flex-col justify-between pt-28 pb-14 px-4 sm:px-6 lg:px-12 overflow-hidden">
+      <!-- Background Watermark -->
+      <div class="absolute top-2 sm:top-6 right-0 sm:right-6 pointer-events-none select-none z-0 opacity-20">
+        <span class="hero-watermark font-syne text-[14vw] sm:text-[16vw] font-black leading-none uppercase tracking-tighter">
+          SUSMITA
+        </span>
+      </div>
+
+      <!-- Main Content Stage -->
+      <div class="relative z-10 max-w-4xl">
+        <!-- Eyebrow Badge -->
+        <div class="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-white/[0.04] border border-[#c40024]/40 backdrop-blur-md mb-6">
+          <span class="relative flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ff1744] opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-[#ff1744]"></span>
+          </span>
+          <span class="text-xs font-mono font-medium tracking-widest text-[#f5f5f5] uppercase">
+            01 / BUSINESS DEVELOPMENT & GROWTH STRATEGIST
+          </span>
+        </div>
+
+        <!-- Refined Modern Typography -->
+        <div class="font-syne uppercase tracking-tight select-none">
+          <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-white block leading-[1.05]" style="max-width: 16ch;">
+            BUILDING IDEAS
+          </h1>
+          <div class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold block mt-1.5 leading-[1.05]" style="max-width: 16ch;">
+            <span class="bg-clip-text text-transparent" style="background-image: linear-gradient(135deg, #ffffff 0%, #ff4d6d 50%, #c40024 100%);">
+              INTO EXPERIENCES
+            </span>
+            <span class="text-[#ff1744]" style="text-shadow: 0 0 20px rgba(224, 0, 42, 0.6), 0 0 40px rgba(196, 0, 36, 0.3);">.</span>
+          </div>
+        </div>
+
+        <!-- Candidate Bio -->
+        <p class="mt-6 text-sm sm:text-base lg:text-lg text-white/75 max-w-2xl font-space leading-relaxed">
+          Results-driven Digital Marketing, Social Media & Operations Professional with 8+ years of experience spearheading digital marketing, content strategy, lead generation, e-commerce operations, and high-impact stakeholder outreach.
+        </p>
+
+        <!-- Magnetic CTAs -->
+        <div class="mt-8 flex flex-wrap items-center gap-4">
+          <a href="#projects" class="group relative inline-flex items-center gap-2.5 px-7 py-3.5 rounded-full bg-[#c40024] hover:bg-[#e0002a] text-white font-mono text-xs sm:text-sm tracking-wider uppercase font-semibold transition-all duration-300 shadow-[0_0_25px_rgba(196,0,36,0.5)] hover:shadow-[0_0_35px_rgba(224,0,42,0.8)]">
+            <span>EXPLORE WORK</span>
+            <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300"></i>
+          </a>
+
+          <a href="#contact" class="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/30 text-white font-mono text-xs sm:text-sm tracking-wider uppercase transition-all duration-300 backdrop-blur-md">
+            <i data-lucide="download" class="w-4 h-4 text-[#ff1744]"></i>
+            <span>DOWNLOAD RÉSUMÉ</span>
+          </a>
+
+          <!-- Open to Opportunities Beacon -->
+          <div class="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/40 border border-white/10 text-xs font-mono text-white/80">
+            <span class="w-2 h-2 rounded-full bg-[#00ff88] animate-pulse"></span>
+            <span>OPEN TO HIGH-IMPACT MANDATES</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: ABOUT & OPERATIONAL DOSSIER -->
+    <section id="about" class="relative w-full py-24 px-4 sm:px-6 lg:px-8 overflow-hidden">
+      <div class="max-w-6xl mx-auto">
+        <div class="mb-12">
+          <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#c40024]/30 bg-[#c40024]/10 text-[#ff1744] text-xs font-mono tracking-widest uppercase mb-3">
+            <i data-lucide="terminal" class="w-4 h-4"></i>
+            <span>02 / OPERATIONAL DOSSIER</span>
+          </div>
+          <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold font-syne text-white tracking-tight uppercase">
+            ARCHITECTING <span class="text-[#ff1744]">GROWTH ENGINES</span>
+          </h2>
+          <p class="mt-3 text-white/60 font-space text-sm sm:text-base max-w-2xl">
+            A fusion of analytical sociology, high-conversion commercial marketing, and rigorous cross-border e-commerce operations.
+          </p>
+        </div>
+
+        <div class="space-y-6">
+          <!-- Main Inspection Console (Cleaned: No attached broken image) -->
+          <div class="rounded-2xl bg-[#09090c]/90 border border-white/10 backdrop-blur-xl p-6 sm:p-8">
+            <div class="flex items-center justify-between pb-4 mb-6 border-b border-white/10">
+              <div class="flex items-center gap-2">
+                <div class="w-3 h-3 rounded-full bg-[#ff5f56]"></div>
+                <div class="w-3 h-3 rounded-full bg-[#ffbd2e]"></div>
+                <div class="w-3 h-3 rounded-full bg-[#27c93f]"></div>
+                <span class="text-xs font-mono text-white/40 ml-2">SUSMITA_PROFILE_INSPECTOR.sh</span>
+              </div>
+              <div class="flex items-center gap-3">
+                <div class="text-[10px] font-mono text-[#00ff88] flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#00ff88] animate-ping"></span>
+                  STATUS: ACTIVE AGENT
+                </div>
+                <div class="text-[10px] font-mono text-white/40">GEO: DEL / GAU</div>
+              </div>
+            </div>
+
+            <div class="space-y-4 text-white/80 font-space text-sm sm:text-base leading-relaxed">
+              <p>
+                With over 8 years of cross-functional excellence, I bridge the gap between creative storytelling and operational precision. From managing domestic & international e-commerce channels on Shopify, Nykaa, and Myntra to orchestrating high-stakes government book launches with the Chief Minister of Assam, I engineer scalable growth engines powered by modern AI workflows, high-converting paid funnels, and enterprise stakeholder alignment.
+              </p>
+              <p class="text-white/60">
+                Specialized in multi-touch digital pipelines, cross-border fulfillment networks, algorithmic ad spends on Meta, and high-stakes dignitary event coordination.
+              </p>
+            </div>
+
+            <!-- 4 Core Operational Pillars -->
+            <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div class="p-4 rounded-xl bg-white/[0.02] border border-white/5 space-y-2">
+                <div class="p-2 w-fit rounded-lg bg-[#c40024]/20 text-[#ff1744]">
+                  <i data-lucide="zap" class="w-4 h-4"></i>
+                </div>
+                <h4 class="text-sm font-bold font-syne text-white">Growth & Lead Acquisition</h4>
+                <p class="text-xs text-white/60 font-space leading-relaxed">
+                  Data-backed paid media funnels, Meta Ads targeting, and continuous conversion rate optimization.
+                </p>
+              </div>
+
+              <div class="p-4 rounded-xl bg-white/[0.02] border border-white/5 space-y-2">
+                <div class="p-2 w-fit rounded-lg bg-[#00e5ff]/20 text-[#00e5ff]">
+                  <i data-lucide="shield" class="w-4 h-4"></i>
+                </div>
+                <h4 class="text-sm font-bold font-syne text-white">Enterprise Operations</h4>
+                <p class="text-xs text-white/60 font-space leading-relaxed">
+                  End-to-end commerce fulfillment across Shopify, Myntra, Nykaa, and international logistics hubs.
+                </p>
+              </div>
+
+              <div class="p-4 rounded-xl bg-white/[0.02] border border-white/5 space-y-2">
+                <div class="p-2 w-fit rounded-lg bg-[#00ff88]/20 text-[#00ff88]">
+                  <i data-lucide="award" class="w-4 h-4"></i>
+                </div>
+                <h4 class="text-sm font-bold font-syne text-white">High-Stakes Activations</h4>
+                <p class="text-xs text-white/60 font-space leading-relaxed">
+                  Single-point coordination for state government book releases and flagship celebrity showroom launches.
+                </p>
+              </div>
+
+              <div class="p-4 rounded-xl bg-white/[0.02] border border-white/5 space-y-2">
+                <div class="p-2 w-fit rounded-lg bg-[#ffd700]/20 text-[#ffd700]">
+                  <i data-lucide="cpu" class="w-4 h-4"></i>
+                </div>
+                <h4 class="text-sm font-bold font-syne text-white">Modern AI & MarTech</h4>
+                <p class="text-xs text-white/60 font-space leading-relaxed">
+                  Leveraging ChatGPT, Claude, Gemini, Brand24, and automated tools for lightning-speed strategic intelligence.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Languages -->
+          <div class="p-6 rounded-2xl bg-[#09090c]/80 border border-white/10 backdrop-blur-xl">
+            <h4 class="text-xs font-mono uppercase tracking-widest text-white/50 mb-4 flex items-center gap-2">
+              <i data-lucide="globe" class="w-4 h-4 text-[#ff1744]"></i>
+              COMMUNICATION PROTOCOLS (LANGUAGES)
+            </h4>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div class="p-3.5 rounded-lg bg-white/[0.02] border border-white/5">
+                <div class="text-xs font-bold text-white font-space">English</div>
+                <div class="text-[10px] font-mono text-[#00e5ff] mt-0.5">Fluent / Professional</div>
+              </div>
+              <div class="p-3.5 rounded-lg bg-white/[0.02] border border-white/5">
+                <div class="text-xs font-bold text-white font-space">Hindi</div>
+                <div class="text-[10px] font-mono text-[#00e5ff] mt-0.5">Fluent / Native</div>
+              </div>
+              <div class="p-3.5 rounded-lg bg-white/[0.02] border border-white/5">
+                <div class="text-xs font-bold text-white font-space">Bengali</div>
+                <div class="text-[10px] font-mono text-[#00e5ff] mt-0.5">Fluent / Native</div>
+              </div>
+              <div class="p-3.5 rounded-lg bg-white/[0.02] border border-white/5">
+                <div class="text-xs font-bold text-white font-space">Assamese</div>
+                <div class="text-[10px] font-mono text-[#00e5ff] mt-0.5">Working Proficiency</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Telemetry Strip -->
+          <div class="p-5 rounded-2xl bg-[#09090c]/80 border border-white/10 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+              <i data-lucide="activity" class="w-5 h-5 text-[#ff1744] animate-pulse"></i>
+              <span class="text-xs font-mono text-white/80">
+                CURRENT AVAILABILITY: EXECUTIVE & SENIOR CONSULTING MANDATES
+              </span>
+            </div>
+            <a href="#contact" class="px-4 py-2 rounded-lg bg-[#c40024] hover:bg-[#e0002a] text-white text-xs font-mono uppercase tracking-wider transition-all">
+              REQUEST AUDIT
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: BILATERAL ALTERNATING EXPERIENCE & EDUCATION TIMELINE -->
+    <section id="experience" class="relative w-full py-28 px-4 sm:px-6 lg:px-8 overflow-hidden">
+      <div class="max-w-6xl mx-auto relative z-20">
+        <div class="text-center mb-16">
+          <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#c40024]/30 bg-[#c40024]/10 text-[#ff1744] text-xs font-mono tracking-widest uppercase mb-4">
+            <i data-lucide="sparkles" class="w-4 h-4"></i>
+            <span>03 / CAREER & ACADEMIC ODYSSEY</span>
+          </div>
+          <h2 class="text-4xl sm:text-5xl lg:text-6xl font-bold font-syne text-white tracking-tight uppercase">
+            EXPERIENCE & <span class="text-[#ff1744]">EDUCATION</span>
+          </h2>
+          <p class="mt-4 text-white/60 font-space text-sm sm:text-base max-w-2xl mx-auto">
+            A chronological timeline of strategic leadership, cross-border e-commerce operations, enterprise marketing, and rigorous academic foundations.
+          </p>
+
+          <!-- Interactive Filter Pills -->
+          <div class="mt-8 inline-flex p-1.5 rounded-full bg-white/[0.03] border border-white/10 backdrop-blur-md">
+            <button onclick="filterTimeline('all')" id="filter-all" class="timeline-filter active px-5 py-2 rounded-full text-xs font-mono uppercase tracking-wider transition-all duration-300 bg-[#c40024] text-white font-semibold shadow-[0_0_20px_rgba(196,0,36,0.6)]">
+              All Milestones
+            </button>
+            <button onclick="filterTimeline('work')" id="filter-work" class="timeline-filter px-5 py-2 rounded-full text-xs font-mono uppercase tracking-wider transition-all duration-300 text-white/60 hover:text-white">
+              Work Experience
+            </button>
+            <button onclick="filterTimeline('education')" id="filter-education" class="timeline-filter px-5 py-2 rounded-full text-xs font-mono uppercase tracking-wider transition-all duration-300 text-white/60 hover:text-white">
+              Education
+            </button>
+          </div>
+        </div>
+
+        <!-- Bilateral Alternating Timeline Spine -->
+        <div class="relative">
+          <!-- Central Glowing Neon Spine -->
+          <div class="absolute top-0 bottom-0 left-4 md:left-1/2 w-0.5 -translate-x-1/2 bg-gradient-to-b from-[#ff1744] via-[#c40024] to-transparent shadow-[0_0_12px_#ff1744]"></div>
+
+          <div id="timeline-container" class="space-y-12">
+            <!-- Item 1: IWIL IGNITE -->
+            <div class="timeline-card relative flex flex-col md:flex-row items-start" data-type="work">
+              <div class="absolute left-4 md:left-1/2 -translate-x-1/2 flex items-center justify-center z-30 mt-6">
+                <div class="relative flex items-center justify-center">
+                  <div class="absolute w-7 h-7 rounded-full animate-ping opacity-75 bg-[#00ff88]/40"></div>
+                  <div class="w-5 h-5 rounded-full border-2 border-[#00ff88] bg-[#09090c] flex items-center justify-center shadow-[0_0_15px_rgba(0,255,136,0.8)]">
+                    <div class="w-2 h-2 rounded-full bg-[#00ff88]"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="ml-12 md:ml-0 md:w-1/2 md:pr-12 w-full">
+                <div class="group relative p-6 sm:p-8 rounded-2xl bg-[#09090c]/90 border border-white/10 hover:border-[#ff1744]/40 transition-all duration-300 shadow-2xl backdrop-blur-xl">
+                  <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                    <span class="p-1.5 rounded-lg text-xs bg-[#c40024]/20 text-[#ff5252] font-mono uppercase">
+                      Current Mandate
+                    </span>
+                    <div class="inline-flex items-center gap-1.5 text-xs font-mono text-[#00ff88] bg-[#00ff88]/10 px-2.5 py-1 rounded border border-[#00ff88]/20">
+                      AUGUST 2026 – PRESENT
+                    </div>
+                  </div>
+                  <h3 class="text-xl sm:text-2xl font-bold font-syne text-white group-hover:text-[#ff1744] transition-colors">
+                    Business Development Manager
+                  </h3>
+                  <div class="text-sm font-semibold text-white/80 mt-1">IWIL IGNITE</div>
+                  <ul class="mt-4 space-y-2.5">
+                    <li class="text-xs sm:text-sm text-white/70 flex items-start gap-2.5 font-space">
+                      <span class="w-1.5 h-1.5 rounded-full bg-[#c40024] mt-2 flex-shrink-0"></span>
+                      <span>Manage end-to-end social media, editorial planning, campaign promotion, and executive personal branding across multi-platform networks.</span>
+                    </li>
+                    <li class="text-xs sm:text-sm text-white/70 flex items-start gap-2.5 font-space">
+                      <span class="w-1.5 h-1.5 rounded-full bg-[#c40024] mt-2 flex-shrink-0"></span>
+                      <span>Drive Academic & SMB outreach, B2B lead generation, press & media outreach, and institutional partnership pipelines.</span>
+                    </li>
+                    <li class="text-xs sm:text-sm text-white/70 flex items-start gap-2.5 font-space">
+                      <span class="w-1.5 h-1.5 rounded-full bg-[#c40024] mt-2 flex-shrink-0"></span>
+                      <span>Coordinate high-level meeting line-ups, stakeholder negotiations, event marketing, and craft board-ready pitch decks, proposals, and presentations.</span>
+                    </li>
+                  </ul>
+                  <div class="mt-5 pt-4 border-t border-white/5 flex flex-wrap gap-2">
+                    <span class="px-2.5 py-1 rounded bg-white/[0.04] border border-white/5 text-[11px] font-mono text-white/60">B2B Outreach</span>
+                    <span class="px-2.5 py-1 rounded bg-white/[0.04] border border-white/5 text-[11px] font-mono text-white/60">Personal Branding</span>
+                    <span class="px-2.5 py-1 rounded bg-white/[0.04] border border-white/5 text-[11px] font-mono text-white/60">Pitch Decks</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Item 2: Zamana -->
+            <div class="timeline-card relative flex flex-col md:flex-row-reverse items-start" data-type="work">
+              <div class="absolute left-4 md:left-1/2 -translate-x-1/2 flex items-center justify-center z-30 mt-6">
+                <div class="relative flex items-center justify-center">
+                  <div class="w-5 h-5 rounded-full border-2 border-[#ff1744] bg-[#09090c] flex items-center justify-center shadow-[0_0_15px_rgba(196,0,36,0.8)]">
+                    <div class="w-2 h-2 rounded-full bg-[#ff1744]"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="ml-12 md:ml-0 md:w-1/2 md:pl-12 w-full">
+                <div class="group relative p-6 sm:p-8 rounded-2xl bg-[#09090c]/90 border border-white/10 hover:border-[#ff1744]/40 transition-all duration-300 shadow-2xl backdrop-blur-xl">
+                  <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                    <span class="p-1.5 rounded-lg text-xs bg-[#c40024]/20 text-[#ff5252] font-mono uppercase">
+                      E-Commerce Operations
+                    </span>
+                    <div class="inline-flex items-center gap-1.5 text-xs font-mono text-[#ff1744] bg-[#ff1744]/10 px-2.5 py-1 rounded border border-[#ff1744]/20">
+                      DECEMBER 2025 – APRIL 2026
+                    </div>
+                  </div>
+                  <h3 class="text-xl sm:text-2xl font-bold font-syne text-white group-hover:text-[#ff1744] transition-colors">
+                    Operations Manager
+                  </h3>
+                  <div class="text-sm font-semibold text-white/80 mt-1">Zamana</div>
+                  <ul class="mt-4 space-y-2.5">
+                    <li class="text-xs sm:text-sm text-white/70 flex items-start gap-2.5 font-space">
+                      <span class="w-1.5 h-1.5 rounded-full bg-[#c40024] mt-2 flex-shrink-0"></span>
+                      <span>Architected end-to-end order processing, fulfillment pipelines, and return logistics across Shopify, Myntra, Nykaa, Shipglobal International, and Aramex.</span>
+                    </li>
+                    <li class="text-xs sm:text-sm text-white/70 flex items-start gap-2.5 font-space">
+                      <span class="w-1.5 h-1.5 rounded-full bg-[#c40024] mt-2 flex-shrink-0"></span>
+                      <span>Handled domestic and cross-border international orders while actively converting customer inquiries into repeat sales through deep product knowledge.</span>
+                    </li>
+                  </ul>
+                  <div class="mt-5 pt-4 border-t border-white/5 flex flex-wrap gap-2">
+                    <span class="px-2.5 py-1 rounded bg-white/[0.04] border border-white/5 text-[11px] font-mono text-white/60">Shopify</span>
+                    <span class="px-2.5 py-1 rounded bg-white/[0.04] border border-white/5 text-[11px] font-mono text-white/60">Myntra & Nykaa</span>
+                    <span class="px-2.5 py-1 rounded bg-white/[0.04] border border-white/5 text-[11px] font-mono text-white/60">Aramex Logistics</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Item 3: Adceleb Marketing Agency -->
+            <div class="timeline-card relative flex flex-col md:flex-row items-start" data-type="work">
+              <div class="absolute left-4 md:left-1/2 -translate-x-1/2 flex items-center justify-center z-30 mt-6">
+                <div class="w-5 h-5 rounded-full border-2 border-[#ff1744] bg-[#09090c] flex items-center justify-center shadow-[0_0_15px_rgba(196,0,36,0.8)]">
+                  <div class="w-2 h-2 rounded-full bg-[#ff1744]"></div>
+                </div>
+              </div>
+              <div class="ml-12 md:ml-0 md:w-1/2 md:pr-12 w-full">
+                <div class="group relative p-6 sm:p-8 rounded-2xl bg-[#09090c]/90 border border-white/10 hover:border-[#ff1744]/40 transition-all duration-300 shadow-2xl backdrop-blur-xl">
+                  <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                    <span class="p-1.5 rounded-lg text-xs bg-[#c40024]/20 text-[#ff5252] font-mono uppercase">
+                      Agency Leadership
+                    </span>
+                    <div class="inline-flex items-center gap-1.5 text-xs font-mono text-[#ff1744] bg-[#ff1744]/10 px-2.5 py-1 rounded border border-[#ff1744]/20">
+                      APRIL 2023 – DECEMBER 2025
+                    </div>
+                  </div>
+                  <h3 class="text-xl sm:text-2xl font-bold font-syne text-white group-hover:text-[#ff1744] transition-colors">
+                    Social Media Manager
+                  </h3>
+                  <div class="text-sm font-semibold text-white/80 mt-1">Adceleb Marketing Agency</div>
+                  <ul class="mt-4 space-y-2.5">
+                    <li class="text-xs sm:text-sm text-white/70 flex items-start gap-2.5 font-space">
+                      <span class="w-1.5 h-1.5 rounded-full bg-[#c40024] mt-2 flex-shrink-0"></span>
+                      <span>Managed clients' social media pages across multiple platforms, ensuring consistent posting, brand alignment, and audience engagement.</span>
+                    </li>
+                    <li class="text-xs sm:text-sm text-white/70 flex items-start gap-2.5 font-space">
+                      <span class="w-1.5 h-1.5 rounded-full bg-[#c40024] mt-2 flex-shrink-0"></span>
+                      <span>Planned, executed, and optimized paid ad campaigns to boost reach, leads, and conversions for diverse corporate and retail clients.</span>
+                    </li>
+                  </ul>
+                  <div class="mt-5 pt-4 border-t border-white/5 flex flex-wrap gap-2">
+                    <span class="px-2.5 py-1 rounded bg-white/[0.04] border border-white/5 text-[11px] font-mono text-white/60">Meta Ads Manager</span>
+                    <span class="px-2.5 py-1 rounded bg-white/[0.04] border border-white/5 text-[11px] font-mono text-white/60">Content Strategy</span>
+                    <span class="px-2.5 py-1 rounded bg-white/[0.04] border border-white/5 text-[11px] font-mono text-white/60">Paid Funnels</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Item 4: Skyline Tours & Travels -->
+            <div class="timeline-card relative flex flex-col md:flex-row-reverse items-start" data-type="work">
+              <div class="absolute left-4 md:left-1/2 -translate-x-1/2 flex items-center justify-center z-30 mt-6">
+                <div class="w-5 h-5 rounded-full border-2 border-[#ff1744] bg-[#09090c] flex items-center justify-center shadow-[0_0_15px_rgba(196,0,36,0.8)]">
+                  <div class="w-2 h-2 rounded-full bg-[#ff1744]"></div>
+                </div>
+              </div>
+              <div class="ml-12 md:ml-0 md:w-1/2 md:pl-12 w-full">
+                <div class="group relative p-6 sm:p-8 rounded-2xl bg-[#09090c]/90 border border-white/10 hover:border-[#ff1744]/40 transition-all duration-300 shadow-2xl backdrop-blur-xl">
+                  <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                    <span class="p-1.5 rounded-lg text-xs bg-[#c40024]/20 text-[#ff5252] font-mono uppercase">
+                      Growth & Accounts
+                    </span>
+                    <div class="inline-flex items-center gap-1.5 text-xs font-mono text-[#ff1744] bg-[#ff1744]/10 px-2.5 py-1 rounded border border-[#ff1744]/20">
+                      MAY 2021 – APRIL 2023
+                    </div>
+                  </div>
+                  <h3 class="text-xl sm:text-2xl font-bold font-syne text-white group-hover:text-[#ff1744] transition-colors">
+                    Social Media Specialist & Accountant
+                  </h3>
+                  <div class="text-sm font-semibold text-white/80 mt-1">Skyline Tours & Travels</div>
+                  <ul class="mt-4 space-y-2.5">
+                    <li class="text-xs sm:text-sm text-white/70 flex items-start gap-2.5 font-space">
+                      <span class="w-1.5 h-1.5 rounded-full bg-[#c40024] mt-2 flex-shrink-0"></span>
+                      <span>Managed and processed clients' travel bills with precision, ensuring seamless invoice, expense, and financial record handling.</span>
+                    </li>
+                    <li class="text-xs sm:text-sm text-white/70 flex items-start gap-2.5 font-space">
+                      <span class="w-1.5 h-1.5 rounded-full bg-[#c40024] mt-2 flex-shrink-0"></span>
+                      <span>Prepared customized travel quotations, developed campaign ideas, and contributed to overall digital visibility.</span>
+                    </li>
+                  </ul>
+                  <div class="mt-5 pt-4 border-t border-white/5 flex flex-wrap gap-2">
+                    <span class="px-2.5 py-1 rounded bg-white/[0.04] border border-white/5 text-[11px] font-mono text-white/60">Financial Auditing</span>
+                    <span class="px-2.5 py-1 rounded bg-white/[0.04] border border-white/5 text-[11px] font-mono text-white/60">B2B Proposals</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Item 5: Master in Sociology (Education) -->
+            <div class="timeline-card relative flex flex-col md:flex-row items-start" data-type="education">
+              <div class="absolute left-4 md:left-1/2 -translate-x-1/2 flex items-center justify-center z-30 mt-6">
+                <div class="w-5 h-5 rounded-full border-2 border-[#00e5ff] bg-[#09090c] flex items-center justify-center shadow-[0_0_15px_rgba(0,229,255,0.8)]">
+                  <div class="w-2 h-2 rounded-full bg-[#00e5ff]"></div>
+                </div>
+              </div>
+              <div class="ml-12 md:ml-0 md:w-1/2 md:pr-12 w-full">
+                <div class="group relative p-6 sm:p-8 rounded-2xl bg-[#09090c]/90 border border-[#00e5ff]/30 hover:border-[#00e5ff]/60 transition-all duration-300 shadow-2xl backdrop-blur-xl">
+                  <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                    <span class="p-1.5 rounded-lg text-xs bg-[#00e5ff]/20 text-[#00e5ff] font-mono uppercase">
+                      Post-Graduate Degree
+                    </span>
+                    <div class="inline-flex items-center gap-1.5 text-xs font-mono text-[#00e5ff] bg-[#00e5ff]/10 px-2.5 py-1 rounded border border-[#00e5ff]/20">
+                      2018 – 2020
+                    </div>
+                  </div>
+                  <h3 class="text-xl sm:text-2xl font-bold font-syne text-white group-hover:text-[#00e5ff] transition-colors">
+                    Master of Arts in Sociology
+                  </h3>
+                  <div class="text-sm font-semibold text-white/80 mt-1">IGNOU - Delhi</div>
+                  <p class="mt-4 text-xs sm:text-sm text-white/70 font-space leading-relaxed">
+                    Advanced study in social systems, organizational dynamics, consumer behavior, and demographic analysis that forms the analytical foundation of all modern marketing and content campaigns.
+                  </p>
+                  <div class="mt-5 pt-4 border-t border-white/5 flex flex-wrap gap-2">
+                    <span class="px-2.5 py-1 rounded bg-white/[0.04] border border-white/5 text-[11px] font-mono text-[#00e5ff]">Sociology</span>
+                    <span class="px-2.5 py-1 rounded bg-white/[0.04] border border-white/5 text-[11px] font-mono text-[#00e5ff]">Audience Psychographics</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Item 6: IUMS Company -->
+            <div class="timeline-card relative flex flex-col md:flex-row-reverse items-start" data-type="work">
+              <div class="absolute left-4 md:left-1/2 -translate-x-1/2 flex items-center justify-center z-30 mt-6">
+                <div class="w-5 h-5 rounded-full border-2 border-[#ff1744] bg-[#09090c] flex items-center justify-center shadow-[0_0_15px_rgba(196,0,36,0.8)]">
+                  <div class="w-2 h-2 rounded-full bg-[#ff1744]"></div>
+                </div>
+              </div>
+              <div class="ml-12 md:ml-0 md:w-1/2 md:pl-12 w-full">
+                <div class="group relative p-6 sm:p-8 rounded-2xl bg-[#09090c]/90 border border-white/10 hover:border-[#ff1744]/40 transition-all duration-300 shadow-2xl backdrop-blur-xl">
+                  <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                    <span class="p-1.5 rounded-lg text-xs bg-[#c40024]/20 text-[#ff5252] font-mono uppercase">
+                      Academic Administration
+                    </span>
+                    <div class="inline-flex items-center gap-1.5 text-xs font-mono text-[#ff1744] bg-[#ff1744]/10 px-2.5 py-1 rounded border border-[#ff1744]/20">
+                      JULY 2020 – APRIL 2021
+                    </div>
+                  </div>
+                  <h3 class="text-xl sm:text-2xl font-bold font-syne text-white group-hover:text-[#ff1744] transition-colors">
+                    Administrative Executive
+                  </h3>
+                  <div class="text-sm font-semibold text-white/80 mt-1">IUMS Company (Gauhati University)</div>
+                  <p class="mt-4 text-xs sm:text-sm text-white/70 font-space leading-relaxed">
+                    Reviewed and validated university student results, ensuring accurate database entry while resolving portal queries and coordinating multi-department communication.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Item 7: Gurukul Kids & Kidzee -->
+            <div class="timeline-card relative flex flex-col md:flex-row items-start" data-type="work">
+              <div class="absolute left-4 md:left-1/2 -translate-x-1/2 flex items-center justify-center z-30 mt-6">
+                <div class="w-5 h-5 rounded-full border-2 border-[#ff1744] bg-[#09090c] flex items-center justify-center shadow-[0_0_15px_rgba(196,0,36,0.8)]">
+                  <div class="w-2 h-2 rounded-full bg-[#ff1744]"></div>
+                </div>
+              </div>
+              <div class="ml-12 md:ml-0 md:w-1/2 md:pr-12 w-full">
+                <div class="group relative p-6 sm:p-8 rounded-2xl bg-[#09090c]/90 border border-white/10 hover:border-[#ff1744]/40 transition-all duration-300 shadow-2xl backdrop-blur-xl">
+                  <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                    <span class="p-1.5 rounded-lg text-xs bg-[#c40024]/20 text-[#ff5252] font-mono uppercase">
+                      Operations
+                    </span>
+                    <div class="inline-flex items-center gap-1.5 text-xs font-mono text-[#ff1744] bg-[#ff1744]/10 px-2.5 py-1 rounded border border-[#ff1744]/20">
+                      APRIL 2017 – JUNE 2020
+                    </div>
+                  </div>
+                  <h3 class="text-xl sm:text-2xl font-bold font-syne text-white group-hover:text-[#ff1744] transition-colors">
+                    Admission Executive (Back-End Ops) | Substitute Teacher
+                  </h3>
+                  <div class="text-sm font-semibold text-white/80 mt-1">Gurukul Kids & Kidzee</div>
+                  <p class="mt-4 text-xs sm:text-sm text-white/70 font-space leading-relaxed">
+                    Maintained and verified student admission records, organized academic data, prepared structured assessment papers, and managed classroom operations.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Item 8: Bachelor in Philosophy (Education) -->
+            <div class="timeline-card relative flex flex-col md:flex-row-reverse items-start" data-type="education">
+              <div class="absolute left-4 md:left-1/2 -translate-x-1/2 flex items-center justify-center z-30 mt-6">
+                <div class="w-5 h-5 rounded-full border-2 border-[#00e5ff] bg-[#09090c] flex items-center justify-center shadow-[0_0_15px_rgba(0,229,255,0.8)]">
+                  <div class="w-2 h-2 rounded-full bg-[#00e5ff]"></div>
+                </div>
+              </div>
+              <div class="ml-12 md:ml-0 md:w-1/2 md:pl-12 w-full">
+                <div class="group relative p-6 sm:p-8 rounded-2xl bg-[#09090c]/90 border border-[#00e5ff]/30 hover:border-[#00e5ff]/60 transition-all duration-300 shadow-2xl backdrop-blur-xl">
+                  <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                    <span class="p-1.5 rounded-lg text-xs bg-[#00e5ff]/20 text-[#00e5ff] font-mono uppercase">
+                      Undergraduate Degree
+                    </span>
+                    <div class="inline-flex items-center gap-1.5 text-xs font-mono text-[#00e5ff] bg-[#00e5ff]/10 px-2.5 py-1 rounded border border-[#00e5ff]/20">
+                      2014 – 2017
+                    </div>
+                  </div>
+                  <h3 class="text-xl sm:text-2xl font-bold font-syne text-white group-hover:text-[#00e5ff] transition-colors">
+                    Bachelor of Arts in Philosophy (Honors)
+                  </h3>
+                  <div class="text-sm font-semibold text-white/80 mt-1">Handique Girls’ College - Guwahati</div>
+                  <p class="mt-4 text-xs sm:text-sm text-white/70 font-space leading-relaxed">
+                    Graduated with honors, mastering formal logic, critical dialectics, ethics, and structured analytical problem-solving.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: 3D DRAGGABLE CIRCLE GALLERY FOR CERTIFICATIONS -->
+    <section id="certifications" class="relative w-full py-28 px-4 sm:px-6 lg:px-8 overflow-hidden select-none">
+      <div class="max-w-7xl mx-auto text-center mb-16 relative z-20">
+        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#c40024]/30 bg-[#c40024]/10 text-[#ff1744] text-xs font-mono tracking-widest uppercase mb-4">
+          <i data-lucide="shield-check" class="w-4 h-4"></i>
+          <span>04 / VERIFIED CREDENTIALS</span>
+        </div>
+        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold font-syne text-white tracking-tight uppercase">
+          CYBERNETIC <span class="text-[#ff1744]">CERTIFICATIONS</span>
+        </h2>
+        <p class="mt-4 text-white/60 font-space text-sm sm:text-base max-w-2xl mx-auto">
+          Interactive 3D cylindrical token ring. Drag horizontally to rotate or click any credential to verify cryptographic hash on the immutable ledger.
+        </p>
+      </div>
+
+      <!-- 3D Cylindrical Gallery Stage -->
+      <div id="cylinder-stage" class="relative w-full h-[520px] sm:h-[580px] flex items-center justify-center touch-pan-y cursor-grab active:cursor-grabbing z-20" style="perspective: 1100px;">
+        <!-- Cylinder Container with camera pull-back -->
+        <div id="cylinder-ring" class="relative w-0 h-0 preserve-3d will-change-transform">
+          <!-- Populated by JavaScript with exact cylindrical placement math -->
+        </div>
+      </div>
+
+      <!-- Bottom Pagination Indicator Dots -->
+      <div id="cert-pagination" class="max-w-md mx-auto mt-8 flex items-center justify-center gap-2.5 z-20 relative">
+        <!-- Rendered by JS -->
+      </div>
+    </section>
+
+    <!-- SECTION: FLAGSHIP PROJECTS -->
+    <section id="projects" class="relative w-full py-28 px-4 sm:px-6 lg:px-8 overflow-hidden">
+      <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-16">
+          <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#c40024]/30 bg-[#c40024]/10 text-[#ff1744] text-xs font-mono tracking-widest uppercase mb-4">
+            <i data-lucide="layers" class="w-4 h-4"></i>
+            <span>05 / HIGH-IMPACT DELIVERABLES</span>
+          </div>
+          <h2 class="text-4xl sm:text-5xl lg:text-6xl font-bold font-syne text-white tracking-tight uppercase">
+            FLAGSHIP <span class="text-[#ff1744]">PROJECTS</span>
+          </h2>
+          <p class="mt-4 text-white/60 font-space text-sm sm:text-base max-w-2xl mx-auto">
+            High-stakes government mandates, celebrity showroom brand activations, cross-border e-commerce architectures, and scalable performance funnels.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <!-- Project 1 -->
+          <div class="project-tilt-card group relative rounded-2xl p-8 sm:p-10 bg-[#09090c]/90 border border-white/10 hover:border-[#ff1744]/40 transition-all duration-200 shadow-2xl backdrop-blur-xl flex flex-col justify-between overflow-hidden">
+            <div>
+              <div class="flex items-center justify-between gap-4 mb-4">
+                <span class="text-xs font-mono text-[#ff1744] bg-[#ff1744]/10 px-3 py-1 rounded-full border border-[#ff1744]/20 uppercase">
+                  2022 – 2023
+                </span>
+                <span class="text-xs font-mono text-[#00ff88] flex items-center gap-1.5">
+                  <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                  1,500+ Attendees | Zero Glitches
+                </span>
+              </div>
+              <div class="text-[11px] font-mono tracking-widest text-white/50 uppercase mb-1">
+                ROLE // Event Coordinator & POC
+              </div>
+              <h3 class="text-2xl sm:text-3xl font-bold font-syne text-white group-hover:text-[#ff1744] transition-colors leading-tight">
+                Cyber Safety & National Security Event and CID Book Launch
+              </h3>
+              <div class="text-sm font-semibold text-white/70 mt-1 mb-4 font-space">
+                High-Profile State Mandate with CID Assam & Dr. Himanta Biswa Sarma
+              </div>
+              <p class="text-sm text-white/70 font-space leading-relaxed mb-6">
+                Successfully managed end-to-end coordination of the Cyber Safety and National Security Event organized by CID Assam, including the prestigious launch of the book “Compendium of SOPs, Circulars and Guidelines on Investigation & Prosecution” by Dr. Himanta Biswa Sarma. Played a key role in seamless stakeholder coordination, event execution, and creative supervision, ensuring high-impact visibility for the publication designed by AdCeleb.
+              </p>
+              <div class="space-y-2 mb-6">
+                <div class="text-xs sm:text-sm text-white/80 flex items-start gap-2.5 font-space">
+                  <i data-lucide="check-circle-2" class="w-4 h-4 text-[#ff1744] mt-0.5 flex-shrink-0"></i>
+                  <span>Protocol coordination between state police leadership, cabinet dignitaries, and technical teams.</span>
+                </div>
+                <div class="text-xs sm:text-sm text-white/80 flex items-start gap-2.5 font-space">
+                  <i data-lucide="check-circle-2" class="w-4 h-4 text-[#ff1744] mt-0.5 flex-shrink-0"></i>
+                  <span>Supervised creative production and publication assets designed by AdCeleb with zero defects.</span>
+                </div>
+              </div>
+            </div>
+            <div class="pt-6 border-t border-white/5 flex flex-wrap items-center justify-between gap-4">
+              <div class="flex flex-wrap gap-2">
+                <span class="px-2.5 py-1 rounded bg-white/[0.03] border border-white/5 text-[11px] font-mono text-white/60">State Protocol</span>
+                <span class="px-2.5 py-1 rounded bg-white/[0.03] border border-white/5 text-[11px] font-mono text-white/60">PR Management</span>
+                <span class="px-2.5 py-1 rounded bg-white/[0.03] border border-white/5 text-[11px] font-mono text-white/60">Govt Mandate</span>
+              </div>
+              <span class="inline-flex items-center gap-1.5 text-xs font-mono text-[#ff1744] uppercase tracking-wider">
+                CASE STUDY <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+              </span>
+            </div>
+          </div>
+
+          <!-- Project 2 -->
+          <div class="project-tilt-card group relative rounded-2xl p-8 sm:p-10 bg-[#09090c]/90 border border-white/10 hover:border-[#ff1744]/40 transition-all duration-200 shadow-2xl backdrop-blur-xl flex flex-col justify-between overflow-hidden">
+            <div>
+              <div class="flex items-center justify-between gap-4 mb-4">
+                <span class="text-xs font-mono text-[#ff1744] bg-[#ff1744]/10 px-3 py-1 rounded-full border border-[#ff1744]/20 uppercase">
+                  2023
+                </span>
+                <span class="text-xs font-mono text-[#00ff88] flex items-center gap-1.5">
+                  <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                  350K+ Impressions | 180% Pre-Orders
+                </span>
+              </div>
+              <div class="text-[11px] font-mono tracking-widest text-white/50 uppercase mb-1">
+                ROLE // Event Coordinator & POC
+              </div>
+              <h3 class="text-2xl sm:text-3xl font-bold font-syne text-white group-hover:text-[#ff1744] transition-colors leading-tight">
+                Northeast First Smart Furniture Showroom Launch
+              </h3>
+              <div class="text-sm font-semibold text-white/70 mt-1 mb-4 font-space">
+                SpaceMax x Designsense Flagship Brand Activation with Zubeen Garg
+              </div>
+              <p class="text-sm text-white/70 font-space leading-relaxed mb-6">
+                Successfully coordinated the launch of the Northeast’s first smart furniture showroom by SpaceMax and Designsense, managed by AdCeleb, with Guest of Honor Zubeen Garg and leading influencers, ensuring smooth execution and high public visibility.
+              </p>
+              <div class="space-y-2 mb-6">
+                <div class="text-xs sm:text-sm text-white/80 flex items-start gap-2.5 font-space">
+                  <i data-lucide="check-circle-2" class="w-4 h-4 text-[#ff1744] mt-0.5 flex-shrink-0"></i>
+                  <span>Managed VIP protocols, live influencer activations, and regional broadcast press line-ups.</span>
+                </div>
+                <div class="text-xs sm:text-sm text-white/80 flex items-start gap-2.5 font-space">
+                  <i data-lucide="check-circle-2" class="w-4 h-4 text-[#ff1744] mt-0.5 flex-shrink-0"></i>
+                  <span>Facilitated customer walkthroughs driving immediate commercial showroom pre-orders.</span>
+                </div>
+              </div>
+            </div>
+            <div class="pt-6 border-t border-white/5 flex flex-wrap items-center justify-between gap-4">
+              <div class="flex flex-wrap gap-2">
+                <span class="px-2.5 py-1 rounded bg-white/[0.03] border border-white/5 text-[11px] font-mono text-white/60">Influencer PR</span>
+                <span class="px-2.5 py-1 rounded bg-white/[0.03] border border-white/5 text-[11px] font-mono text-white/60">Experiential Launch</span>
+                <span class="px-2.5 py-1 rounded bg-white/[0.03] border border-white/5 text-[11px] font-mono text-white/60">Brand Activation</span>
+              </div>
+              <span class="inline-flex items-center gap-1.5 text-xs font-mono text-[#ff1744] uppercase tracking-wider">
+                CASE STUDY <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+              </span>
+            </div>
+          </div>
+
+          <!-- Project 3 -->
+          <div class="project-tilt-card group relative rounded-2xl p-8 sm:p-10 bg-[#09090c]/90 border border-white/10 hover:border-[#ff1744]/40 transition-all duration-200 shadow-2xl backdrop-blur-xl flex flex-col justify-between overflow-hidden">
+            <div>
+              <div class="flex items-center justify-between gap-4 mb-4">
+                <span class="text-xs font-mono text-[#ff1744] bg-[#ff1744]/10 px-3 py-1 rounded-full border border-[#ff1744]/20 uppercase">
+                  2025 – 2026
+                </span>
+                <span class="text-xs font-mono text-[#00ff88] flex items-center gap-1.5">
+                  <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                  45% Lower Stockouts | 98% CSAT
+                </span>
+              </div>
+              <div class="text-[11px] font-mono tracking-widest text-white/50 uppercase mb-1">
+                ROLE // Operations Head & Logistics Integrator
+              </div>
+              <h3 class="text-2xl sm:text-3xl font-bold font-syne text-white group-hover:text-[#ff1744] transition-colors leading-tight">
+                Cross-Border E-Commerce & Supply Chain Architecture
+              </h3>
+              <div class="text-sm font-semibold text-white/70 mt-1 mb-4 font-space">
+                Zamana Omnichannel Fulfillment (Shopify, Nykaa, Myntra, Aramex)
+              </div>
+              <p class="text-sm text-white/70 font-space leading-relaxed mb-6">
+                Managing end-to-end order processing across Shopify, Myntra, Shipglobal International, Aramex and Nykaa. Handled both domestic and international orders while actively converting customer inquiries into successful sales through strong product understanding and customer handling skills.
+              </p>
+            </div>
+            <div class="pt-6 border-t border-white/5 flex flex-wrap items-center justify-between gap-4">
+              <div class="flex flex-wrap gap-2">
+                <span class="px-2.5 py-1 rounded bg-white/[0.03] border border-white/5 text-[11px] font-mono text-white/60">Shopify</span>
+                <span class="px-2.5 py-1 rounded bg-white/[0.03] border border-white/5 text-[11px] font-mono text-white/60">Myntra & Nykaa</span>
+                <span class="px-2.5 py-1 rounded bg-white/[0.03] border border-white/5 text-[11px] font-mono text-white/60">Shipglobal</span>
+              </div>
+              <span class="inline-flex items-center gap-1.5 text-xs font-mono text-[#ff1744] uppercase tracking-wider">
+                CASE STUDY <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+              </span>
+            </div>
+          </div>
+
+          <!-- Project 4 -->
+          <div class="project-tilt-card group relative rounded-2xl p-8 sm:p-10 bg-[#09090c]/90 border border-white/10 hover:border-[#ff1744]/40 transition-all duration-200 shadow-2xl backdrop-blur-xl flex flex-col justify-between overflow-hidden">
+            <div>
+              <div class="flex items-center justify-between gap-4 mb-4">
+                <span class="text-xs font-mono text-[#ff1744] bg-[#ff1744]/10 px-3 py-1 rounded-full border border-[#ff1744]/20 uppercase">
+                  2023 – 2025
+                </span>
+                <span class="text-xs font-mono text-[#00ff88] flex items-center gap-1.5">
+                  <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                  3.8x Blended ROAS | 50K+ Leads
+                </span>
+              </div>
+              <div class="text-[11px] font-mono tracking-widest text-white/50 uppercase mb-1">
+                ROLE // Performance Campaign Strategist
+              </div>
+              <h3 class="text-2xl sm:text-3xl font-bold font-syne text-white group-hover:text-[#ff1744] transition-colors leading-tight">
+                High-ROI Paid Acquisition & Lead Gen Engines
+              </h3>
+              <div class="text-sm font-semibold text-white/70 mt-1 mb-4 font-space">
+                AdCeleb Multi-Client Paid Marketing Systems (Facebook & Instagram)
+              </div>
+              <p class="text-sm text-white/70 font-space leading-relaxed mb-6">
+                Planned, executed, and optimized paid ad campaigns to boost reach, leads, and conversions for various clients across corporate, hospitality, education, and healthcare domains with robust return on ad spend.
+              </p>
+            </div>
+            <div class="pt-6 border-t border-white/5 flex flex-wrap items-center justify-between gap-4">
+              <div class="flex flex-wrap gap-2">
+                <span class="px-2.5 py-1 rounded bg-white/[0.03] border border-white/5 text-[11px] font-mono text-white/60">Meta Ads</span>
+                <span class="px-2.5 py-1 rounded bg-white/[0.03] border border-white/5 text-[11px] font-mono text-white/60">Conversion API</span>
+                <span class="px-2.5 py-1 rounded bg-white/[0.03] border border-white/5 text-[11px] font-mono text-white/60">ROAS Scaling</span>
+              </div>
+              <span class="inline-flex items-center gap-1.5 text-xs font-mono text-[#ff1744] uppercase tracking-wider">
+                CASE STUDY <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: SKILLS & ECOSYSTEMS -->
+    <section id="skills" class="relative w-full py-28 px-4 sm:px-6 lg:px-8 overflow-hidden">
+      <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-16">
+          <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#c40024]/30 bg-[#c40024]/10 text-[#ff1744] text-xs font-mono tracking-widest uppercase mb-4">
+            <i data-lucide="cpu" class="w-4 h-4"></i>
+            <span>06 / COMPETENCY ARSENAL</span>
+          </div>
+          <h2 class="text-4xl sm:text-5xl lg:text-6xl font-bold font-syne text-white tracking-tight uppercase">
+            SKILLS & <span class="text-[#ff1744]">ECOSYSTEMS</span>
+          </h2>
+          <p class="mt-4 text-white/60 font-space text-sm sm:text-base max-w-2xl mx-auto">
+            A comprehensive matrix of strategic business acumen, enterprise e-commerce pipelines, performance marketing algorithms, and AI tooling.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-20">
+          <!-- Card 1 -->
+          <div class="p-8 rounded-2xl bg-[#09090c]/90 border border-white/10 shadow-xl backdrop-blur-xl">
+            <div class="flex items-center gap-3.5 mb-3">
+              <div class="p-2.5 rounded-xl bg-white/[0.03] border border-white/5 text-[#ff1744]">
+                <i data-lucide="trending-up" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold font-syne text-white">Strategic Growth & Leadership</h3>
+                <p class="text-xs text-white/50 font-space">Commercial pipelines, business development, and executive presentations.</p>
+              </div>
+            </div>
+            <div class="mt-6 space-y-3.5">
+              <div class="space-y-1.5">
+                <div class="flex items-center justify-between text-xs font-mono"><span class="text-white font-medium">Business Development & Outreach</span><span class="text-white/40">95%</span></div>
+                <div class="h-1.5 w-full bg-white/[0.04] rounded-full overflow-hidden"><div class="h-full rounded-full bg-[#ff1744] shadow-[0_0_10px_#ff1744]" style="width: 95%;"></div></div>
+              </div>
+              <div class="space-y-1.5">
+                <div class="flex items-center justify-between text-xs font-mono"><span class="text-white font-medium">Brand Strategy & Positioning</span><span class="text-white/40">92%</span></div>
+                <div class="h-1.5 w-full bg-white/[0.04] rounded-full overflow-hidden"><div class="h-full rounded-full bg-[#ff1744] shadow-[0_0_10px_#ff1744]" style="width: 92%;"></div></div>
+              </div>
+              <div class="space-y-1.5">
+                <div class="flex items-center justify-between text-xs font-mono"><span class="text-white/70">Project Management & Stakeholder Protocol</span><span class="text-white/40">94%</span></div>
+                <div class="h-1.5 w-full bg-white/[0.04] rounded-full overflow-hidden"><div class="h-full rounded-full bg-white/40" style="width: 94%;"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="p-8 rounded-2xl bg-[#09090c]/90 border border-white/10 shadow-xl backdrop-blur-xl">
+            <div class="flex items-center gap-3.5 mb-3">
+              <div class="p-2.5 rounded-xl bg-white/[0.03] border border-white/5 text-[#00e5ff]">
+                <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold font-syne text-white">E-Commerce & Supply Chain</h3>
+                <p class="text-xs text-white/50 font-space">End-to-end commerce fulfillment across major marketplaces.</p>
+              </div>
+            </div>
+            <div class="mt-6 space-y-3.5">
+              <div class="space-y-1.5">
+                <div class="flex items-center justify-between text-xs font-mono"><span class="text-white font-medium">Shopify Store & Catalog Operations</span><span class="text-white/40">94%</span></div>
+                <div class="h-1.5 w-full bg-white/[0.04] rounded-full overflow-hidden"><div class="h-full rounded-full bg-[#ff1744] shadow-[0_0_10px_#ff1744]" style="width: 94%;"></div></div>
+              </div>
+              <div class="space-y-1.5">
+                <div class="flex items-center justify-between text-xs font-mono"><span class="text-white font-medium">Myntra & Nykaa Seller Hubs</span><span class="text-white/40">90%</span></div>
+                <div class="h-1.5 w-full bg-white/[0.04] rounded-full overflow-hidden"><div class="h-full rounded-full bg-[#ff1744] shadow-[0_0_10px_#ff1744]" style="width: 90%;"></div></div>
+              </div>
+              <div class="space-y-1.5">
+                <div class="flex items-center justify-between text-xs font-mono"><span class="text-white/70">International Logistics (Aramex, Shipglobal)</span><span class="text-white/40">88%</span></div>
+                <div class="h-1.5 w-full bg-white/[0.04] rounded-full overflow-hidden"><div class="h-full rounded-full bg-white/40" style="width: 88%;"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="p-8 rounded-2xl bg-[#09090c]/90 border border-white/10 shadow-xl backdrop-blur-xl">
+            <div class="flex items-center gap-3.5 mb-3">
+              <div class="p-2.5 rounded-xl bg-white/[0.03] border border-white/5 text-[#00ff88]">
+                <i data-lucide="target" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold font-syne text-white">Paid Acquisition & SEO</h3>
+                <p class="text-xs text-white/50 font-space">Performance marketing campaigns, media buying, and CRO.</p>
+              </div>
+            </div>
+            <div class="mt-6 space-y-3.5">
+              <div class="space-y-1.5">
+                <div class="flex items-center justify-between text-xs font-mono"><span class="text-white font-medium">Meta Ads (Facebook & Instagram Ads)</span><span class="text-white/40">94%</span></div>
+                <div class="h-1.5 w-full bg-white/[0.04] rounded-full overflow-hidden"><div class="h-full rounded-full bg-[#ff1744] shadow-[0_0_10px_#ff1744]" style="width: 94%;"></div></div>
+              </div>
+              <div class="space-y-1.5">
+                <div class="flex items-center justify-between text-xs font-mono"><span class="text-white font-medium">Lead Generation & CRM Automation</span><span class="text-white/40">92%</span></div>
+                <div class="h-1.5 w-full bg-white/[0.04] rounded-full overflow-hidden"><div class="h-full rounded-full bg-[#ff1744] shadow-[0_0_10px_#ff1744]" style="width: 92%;"></div></div>
+              </div>
+              <div class="space-y-1.5">
+                <div class="flex items-center justify-between text-xs font-mono"><span class="text-white/70">On-Page & Off-Page SEO Strategies</span><span class="text-white/40">85%</span></div>
+                <div class="h-1.5 w-full bg-white/[0.04] rounded-full overflow-hidden"><div class="h-full rounded-full bg-white/40" style="width: 85%;"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 4 -->
+          <div class="p-8 rounded-2xl bg-[#09090c]/90 border border-white/10 shadow-xl backdrop-blur-xl">
+            <div class="flex items-center gap-3.5 mb-3">
+              <div class="p-2.5 rounded-xl bg-white/[0.03] border border-white/5 text-[#ffd700]">
+                <i data-lucide="cpu" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold font-syne text-white">AI Tools & Modern MarTech</h3>
+                <p class="text-xs text-white/50 font-space">Next-gen artificial intelligence stacks and research automation.</p>
+              </div>
+            </div>
+            <div class="mt-6 space-y-3.5">
+              <div class="space-y-1.5">
+                <div class="flex items-center justify-between text-xs font-mono"><span class="text-white font-medium">Generative AI (ChatGPT, Claude, Gemini)</span><span class="text-white/40">96%</span></div>
+                <div class="h-1.5 w-full bg-white/[0.04] rounded-full overflow-hidden"><div class="h-full rounded-full bg-[#ff1744] shadow-[0_0_10px_#ff1744]" style="width: 96%;"></div></div>
+              </div>
+              <div class="space-y-1.5">
+                <div class="flex items-center justify-between text-xs font-mono"><span class="text-white font-medium">Social Listening (Brand24, Meta AI, Flow)</span><span class="text-white/40">90%</span></div>
+                <div class="h-1.5 w-full bg-white/[0.04] rounded-full overflow-hidden"><div class="h-full rounded-full bg-[#ff1744] shadow-[0_0_10px_#ff1744]" style="width: 90%;"></div></div>
+              </div>
+              <div class="space-y-1.5">
+                <div class="flex items-center justify-between text-xs font-mono"><span class="text-white/70">Presentation Engineering (PowerPoint, Canva)</span><span class="text-white/40">95%</span></div>
+                <div class="h-1.5 w-full bg-white/[0.04] rounded-full overflow-hidden"><div class="h-full rounded-full bg-white/40" style="width: 95%;"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Enterprise Clients Strip -->
+        <div class="p-8 sm:p-12 rounded-3xl bg-[#09090c]/90 border border-white/10 backdrop-blur-2xl">
+          <div class="text-center mb-8">
+            <div class="inline-flex items-center gap-2 text-xs font-mono text-[#ff1744] uppercase tracking-widest mb-2">
+              <i data-lucide="building-2" class="w-4 h-4"></i>
+              <span>TRUSTED BY 35+ ENTERPRISES, GOVERNMENTS & BRANDS</span>
+            </div>
+            <h3 class="text-2xl sm:text-3xl font-bold font-syne text-white">
+              CLIENT FOOTPRINT & BRAND MANDATES
+            </h3>
+          </div>
+
+          <div id="client-badges" class="flex flex-wrap items-center justify-center gap-3">
+            <!-- Client badges will be rendered here -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: CONTACT & TRANSMISSION -->
+    <section id="contact" class="relative w-full py-28 px-4 sm:px-6 lg:px-8 overflow-hidden">
+      <div class="max-w-7xl mx-auto relative z-10">
+        <div class="text-center mb-16">
+          <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#c40024]/30 bg-[#c40024]/10 text-[#ff1744] text-xs font-mono tracking-widest uppercase mb-4">
+            <i data-lucide="message-square" class="w-4 h-4"></i>
+            <span>07 / INITIATE TRANSMISSION</span>
+          </div>
+          <h2 class="text-4xl sm:text-5xl lg:text-6xl font-bold font-syne text-white tracking-tight uppercase">
+            LET'S ENGINEER <span class="text-[#ff1744]">GROWTH</span>
+          </h2>
+          <p class="mt-4 text-white/60 font-space text-sm sm:text-base max-w-2xl mx-auto">
+            Ready to scale business outreach, streamline e-commerce fulfillment, or coordinate your next high-impact event? Connect directly.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <div class="lg:col-span-5 space-y-5">
+            <!-- Email -->
+            <div class="p-6 rounded-2xl bg-[#09090c]/90 border border-white/10 backdrop-blur-xl">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-[10px] font-mono tracking-widest text-[#ff1744] uppercase">PRIMARY EMAIL</span>
+                <button id="copy-email-btn" onclick="copyEmail()" class="inline-flex items-center gap-1.5 text-xs font-mono text-white/60 hover:text-white px-2.5 py-1 rounded bg-white/5 border border-white/5 transition-colors">
+                  <i data-lucide="copy" class="w-3.5 h-3.5" id="copy-icon"></i>
+                  <span id="copy-text">COPY</span>
+                </button>
+              </div>
+              <a href="mailto:susmitadutta130395@gmail.com" class="text-lg sm:text-xl font-bold font-syne text-white hover:text-[#ff1744] transition-colors break-all">
+                susmitadutta130395@gmail.com
+              </a>
+            </div>
+
+            <!-- Phone -->
+            <div class="p-6 rounded-2xl bg-[#09090c]/90 border border-white/10 backdrop-blur-xl">
+              <span class="text-[10px] font-mono tracking-widest text-[#00ff88] uppercase block mb-3">DIRECT SECURE LINE / WHATSAPP</span>
+              <a href="tel:+918638239868" class="text-xl sm:text-2xl font-bold font-syne text-white hover:text-[#00ff88] transition-colors flex items-center gap-3">
+                <i data-lucide="phone" class="w-5 h-5 text-[#00ff88]"></i>
+                +91 86382 39868
+              </a>
+            </div>
+
+            <!-- Hubs -->
+            <div class="p-6 rounded-2xl bg-[#09090c]/90 border border-white/10 backdrop-blur-xl">
+              <span class="text-[10px] font-mono tracking-widest text-[#00e5ff] uppercase block mb-3">OPERATIONAL HUBS</span>
+              <div class="text-lg font-bold font-syne text-white flex items-center gap-2.5">
+                <i data-lucide="map-pin" class="w-5 h-5 text-[#00e5ff]"></i>
+                Guwahati / New Delhi, India
+              </div>
+              <p class="text-xs text-white/50 font-space mt-1">
+                Available for on-site executive engagements in Delhi NCR & Pan-India.
+              </p>
+            </div>
+          </div>
+
+          <!-- Contact Form -->
+          <div class="lg:col-span-7">
+            <form id="contact-form" onsubmit="handleFormSubmit(event)" class="p-8 sm:p-10 rounded-3xl bg-[#09090c]/90 border border-white/10 backdrop-blur-2xl shadow-2xl space-y-6">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                  <label class="block text-xs font-mono uppercase tracking-wider text-white/60 mb-2">YOUR NAME // IDENTITY</label>
+                  <input type="text" required placeholder="e.g. Elena Rostova" class="w-full px-4 py-3.5 rounded-xl bg-black/60 border border-white/10 focus:border-[#ff1744] text-white placeholder-white/30 text-sm font-space outline-none transition-colors">
+                </div>
+                <div>
+                  <label class="block text-xs font-mono uppercase tracking-wider text-white/60 mb-2">EMAIL ADDRESS</label>
+                  <input type="email" required placeholder="elena@company.com" class="w-full px-4 py-3.5 rounded-xl bg-black/60 border border-white/10 focus:border-[#ff1744] text-white placeholder-white/30 text-sm font-space outline-none transition-colors">
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs font-mono uppercase tracking-wider text-white/60 mb-2">SUBJECT // MANDATE TYPE</label>
+                <input type="text" required placeholder="e.g. Growth Marketing / E-Commerce Operations Inquiry" class="w-full px-4 py-3.5 rounded-xl bg-black/60 border border-white/10 focus:border-[#ff1744] text-white placeholder-white/30 text-sm font-space outline-none transition-colors">
+              </div>
+              <div>
+                <label class="block text-xs font-mono uppercase tracking-wider text-white/60 mb-2">TRANSMISSION PAYLOAD (MESSAGE)</label>
+                <textarea rows="5" required placeholder="Outline your project scope, KPIs, timeline, or collaboration proposal..." class="w-full px-4 py-3.5 rounded-xl bg-black/60 border border-white/10 focus:border-[#ff1744] text-white placeholder-white/30 text-sm font-space outline-none transition-colors resize-none"></textarea>
+              </div>
+              <button type="submit" id="submit-btn" class="w-full py-4 rounded-xl bg-[#c40024] hover:bg-[#e0002a] text-white font-mono text-xs sm:text-sm font-bold tracking-widest uppercase transition-all duration-300 shadow-[0_0_25px_rgba(196,0,36,0.6)] flex items-center justify-center gap-2">
+                <i data-lucide="send" class="w-4 h-4"></i>
+                <span id="submit-btn-text">TRANSMIT ENCRYPTED MESSAGE</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="relative w-full py-12 px-4 sm:px-6 lg:px-12 border-t border-white/10 bg-[#030303] z-20">
+      <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
+        <div class="flex items-center gap-3">
+          <div class="p-1 rounded bg-[#c40024]/20 border border-[#c40024]/40 text-[#ff1744]">
+            <i data-lucide="terminal" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <span class="font-syne font-extrabold text-white text-lg tracking-tight">Susmita Dutta</span>
+            <span class="text-[11px] font-mono text-white/40 block">© 2026 // ALL RIGHTS RESERVED</span>
+          </div>
+        </div>
+        <div class="text-xs font-mono text-white/50 text-center sm:text-left">
+          CURATED CYBERNETIC PORTFOLIO // DARK CYBERPUNK 3D ENGINE
+        </div>
+        <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-white text-xs font-mono transition-colors">
+          <span>BACK TO TOP</span>
+          <i data-lucide="arrow-up" class="w-3.5 h-3.5 text-[#ff1744]"></i>
+        </button>
+      </div>
+    </footer>
+  </div>
+
+  <!-- CYBERNETIC VERIFICATION MODAL -->
+  <div id="cert-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md">
+    <div id="cert-modal-content" class="relative w-full max-w-2xl bg-[#09090c] border border-[#c40024]/40 rounded-xl overflow-hidden shadow-[0_0_50px_rgba(196,0,36,0.3)]">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+
+  <!-- SCRIPT ARCHITECTURE: CINEMATIC ENGINE + 3D CYLINDRICAL GALLERY + LENIS + PARALLAX -->
+  <script>
+    // CERTIFICATION DATA
+    const CERTIFICATIONS = [
+      {
+        id: "cert-ai",
+        title: "AI Tools & ChatGPT Mastery",
+        issuer: "be10X Certified",
+        credentialCode: "B10X-AI-2024-8849",
+        securityHash: "SHA256://8a4f91b72c918341604deac36e7a2b91f0980c05763920ebfd5d5ca35df86b40",
+        verifiedDate: "VERIFIED // 2024",
+        laserColor: "#ff0055",
+        summary: "Comprehensive certification on deploying LLMs, generative AI stacks, and autonomous research workflows to accelerate marketing velocity and operational efficiency.",
+        competencies: [
+          "Advanced Prompt Engineering (ChatGPT, Claude, Gemini)",
+          "Automated Market Research & Social Listening (Brand24, Perplexity)",
+          "AI-Assisted Workflow Automation & Presentation Generation"
+        ]
+      },
+      {
+        id: "cert-social",
+        title: "Social Media Certification",
+        issuer: "HubSpot Academy",
+        credentialCode: "HUBSPOT-SMM-9921",
+        securityHash: "SHA256://3f45a0b9e8c4621570d58be167d4aa3f6289b91e92d7cae513fb38bc2c129e47",
+        verifiedDate: "VERIFIED // 2023",
+        laserColor: "#ff5500",
+        summary: "Industry benchmark credential validating end-to-end organic social strategy, influencer alignment, audience retention, and ROI-driven social publishing.",
+        competencies: [
+          "Inbound Social Strategy & Community Building",
+          "Social Listening, Sentiment Analysis & Reputation Management",
+          "Omnichannel Editorial Calendars & Video Content Growth"
+        ]
+      },
+      {
+        id: "cert-content",
+        title: "Content Marketing Certification",
+        issuer: "HubSpot Academy",
+        credentialCode: "HUBSPOT-CM-4812",
+        securityHash: "SHA256://e7c2a41908bf332ca8e146740bde99723df7a641d402120e2ef9a0984f1816bc",
+        verifiedDate: "VERIFIED // 2023",
+        laserColor: "#c40024",
+        summary: "Mastery of high-conversion inbound content frameworks, multi-format storytelling, lead magnet creation, and editorial execution.",
+        competencies: [
+          "Storytelling & Conceptual Copywriting Frameworks",
+          "Search Engine Optimized Content Architecture",
+          "Lead Nurturing Content Funnels & Repurposing Systems"
+        ]
+      },
+      {
+        id: "cert-digital",
+        title: "Digital Marketing Certification",
+        issuer: "HubSpot Academy",
+        credentialCode: "HUBSPOT-DM-7134",
+        securityHash: "SHA256://9b03ef8861c8a14b097b66a505eec46536b3f71c4558296ec5e6f3aa5394a112",
+        verifiedDate: "VERIFIED // 2023",
+        laserColor: "#00e5ff",
+        summary: "Rigorous certification spanning paid media, organic channels, landing page conversion science, and multi-channel marketing architecture.",
+        competencies: [
+          "Full-Funnel Customer Acquisition Strategies",
+          "Conversion Rate Optimization (CRO) & User Flows",
+          "Multi-Touch Attribution & Performance Analytics"
+        ]
+      },
+      {
+        id: "cert-email",
+        title: "Advance Email Marketing Certification",
+        issuer: "Simplilearn SkillUp",
+        credentialCode: "SMPL-AEM-6204",
+        securityHash: "SHA256://1d2e93f885ba46702d8471e89f816432e67c8052140bb98126f54c93eb847d02",
+        verifiedDate: "VERIFIED // 2023",
+        laserColor: "#00ff88",
+        summary: "Advanced credential covering retention marketing, dynamic behavioral personalization, automated email sequences, and high open/click rate optimization.",
+        competencies: [
+          "Lifecycle Automated Drip Sequences & Trigger Funnels",
+          "Database Segmentation & Predictive Churn Prevention",
+          "Inbox Deliverability, DKIM/SPF Protocols & Spam Defense"
+        ]
+      },
+      {
+        id: "cert-pm",
+        title: "Project Management Certification",
+        issuer: "Great Learning",
+        credentialCode: "GL-PM-3091",
+        securityHash: "SHA256://65e02ba403bf6f809927d31ab192c73335db7619a842183e20e89547b7520e54",
+        verifiedDate: "VERIFIED // 2022",
+        laserColor: "#ffd700",
+        summary: "Executive credential verifying project governance, sprint execution, resource scheduling, and timely delivery across complex enterprise operations.",
+        competencies: [
+          "Agile & Waterfall Delivery Methodologies",
+          "Critical Path Method & Resource Capacity Planning",
+          "Risk Mitigation & Cross-Functional Governance"
+        ]
+      }
+    ];
+
+    const CLIENTS = [
+      "Shopify", "Delhivery", "Myntra", "Nykaa", "Aramex", "Unicef", "Apollo Hospitals",
+      "Godrej & Boyce", "India Medtronic", "Varun Beverages", "UNDP", "181 Women Helpline",
+      "Hue Service", "IGSSS", "Kauvery Medical Care", "Caritas India", "Sunshine Trails",
+      "Kirtidhara", "Triptidhara", "Kwilt Mattress", "Cambridge School", "Ritiriwaj",
+      "Shahidarbar Restaurant", "Deshpardesh", "Vintage Cafe", "Balcony Cafe",
+      "Oriental Bistro", "Greenlush", "VittGyan Academy", "StylePerfect", "Prerna Tutorial", "Next Level Pests"
+    ];
+
+    // Populate Client Badges
+    const clientContainer = document.getElementById('client-badges');
+    if (clientContainer) {
+      CLIENTS.forEach(c => {
+        const span = document.createElement('span');
+        span.className = "px-4 py-2 rounded-xl bg-white/[0.03] hover:bg-[#c40024]/20 border border-white/5 hover:border-[#ff1744]/40 text-xs sm:text-sm font-space text-white/80 hover:text-white transition-all duration-200 select-none cursor-default";
+        span.textContent = c;
+        clientContainer.appendChild(span);
+      });
+    }
+
+    // =========================================================================
+    // 1. CINEMATIC CURSOR & SCROLL VIDEO ENGINE
+    // =========================================================================
+    const video = document.getElementById('cine-video');
+    const container = document.getElementById('cine-video-container');
+    const cineGlow = document.getElementById('cine-glow');
+    const scrollBar = document.getElementById('scroll-progress-bar');
+
+    // Guarantee video is paused, muted, no autoplay, no loop
+    video.pause();
+    video.muted = true;
+    video.autoplay = false;
+    video.loop = false;
+
+    // Detect file:// vs http:// environment and ensure source is set
+    if (window.location.protocol === 'file:') {
+      video.src = './public/video/portfolio-background.mp4';
+    } else {
+      video.src = '/video/portfolio-background.mp4';
+    }
+
+    let videoReady = false;
+    let videoDuration = 7.92;
+    let targetTime = 0.0;
+    let currentTime = 0.0;
+    let scrollProgress = 0.0;
+    let normCursorX = 0.5;
+    let normCursorY = 0.5;
+
+    function handleVideoReady() {
+      if (video.duration && !isNaN(video.duration)) {
+        videoDuration = video.duration;
+      }
+      videoReady = true;
+      video.pause();
+      try { video.currentTime = 0; } catch(e) {}
+    }
+
+    video.addEventListener('loadedmetadata', handleVideoReady);
+    video.addEventListener('loadeddata', handleVideoReady);
+    video.addEventListener('canplay', handleVideoReady);
+    video.addEventListener('canplaythrough', handleVideoReady);
+
+    if (video.readyState >= 1 || (video.duration && !isNaN(video.duration))) {
+      handleVideoReady();
+    } else {
+      try { video.load(); } catch(e) {}
+    }
+
+    function updateTargetVideoTime() {
+      let progress = 0;
+      if (scrollProgress < 0.04) {
+        // When on Hero/top, cursor X alone actively scrubs through the full video arc
+        progress = normCursorX;
+      } else {
+        // While scrolling, both scroll progress and cursor X dynamically scrub
+        progress = (scrollProgress * 0.6) + (normCursorX * 0.4);
+      }
+      const clamped = Math.min(1.0, Math.max(0.0, progress));
+      targetTime = clamped * videoDuration;
+    }
+
+    // Mouse Move Listener
+    window.addEventListener('mousemove', (e) => {
+      const w = window.innerWidth || 1;
+      const h = window.innerHeight || 1;
+      normCursorX = Math.min(1.0, Math.max(0.0, e.clientX / w));
+      normCursorY = Math.min(1.0, Math.max(0.0, e.clientY / h));
+
+      const dx = (normCursorX - 0.5) * 2;
+      const dy = (normCursorY - 0.5) * 2;
+
+      // Update Dynamic Spotlight
+      const xp = (normCursorX * 100).toFixed(1);
+      const yp = (normCursorY * 100).toFixed(1);
+      cineGlow.style.setProperty('--glow-x', `${xp}%`);
+      cineGlow.style.setProperty('--glow-y', `${yp}%`);
+
+      updateTargetVideoTime();
+
+      // 3D Parallax Tilt:
+      // scale(1.06) translate3d(dx * -15px, dy * -15px, 0) rotateX(dy * -2deg) rotateY(dx * 2deg)
+      const tx = (dx * -15).toFixed(2);
+      const ty = (dy * -15).toFixed(2);
+      const rx = (dy * -2).toFixed(2);
+      const ry = (dx * 2).toFixed(2);
+      container.style.transform = `scale(1.06) translate3d(${tx}px, ${ty}px, 0px) rotateX(${rx}deg) rotateY(${ry}deg)`;
+
+      // Custom Cursor Position
+      const dot = document.getElementById('cursor-dot');
+      if (dot) {
+        dot.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0)`;
+        dot.style.opacity = '1';
+      }
+    }, { passive: true });
+
+    // Scroll Progress
+    function handleScroll() {
+      const scrollY = window.scrollY || window.pageYOffset || 0;
+      const maxScroll = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight) - window.innerHeight;
+      scrollProgress = maxScroll > 0 ? Math.min(1.0, Math.max(0.0, scrollY / maxScroll)) : 0;
+      
+      if (scrollBar) {
+        scrollBar.style.width = `${(scrollProgress * 100).toFixed(2)}%`;
+      }
+      updateTargetVideoTime();
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+
+    // Frame Seeking Math & LERP in continuous RAF loop
+    function videoLerpLoop() {
+      if (video) {
+        if (!videoReady && video.duration && !isNaN(video.duration)) {
+          videoReady = true;
+          videoDuration = video.duration;
+          video.pause();
+        }
+
+        const delta = targetTime - currentTime;
+        currentTime += delta * 0.10;
+
+        // Only update video.currentTime when difference exceeds 0.001s
+        if (Math.abs(delta) > 0.001) {
+          try {
+            if (typeof video.fastSeek === 'function') {
+              video.fastSeek(currentTime);
+            } else {
+              video.currentTime = currentTime;
+            }
+          } catch(err) {
+            try { video.currentTime = currentTime; } catch(e) {}
+          }
+        }
+      }
+      requestAnimationFrame(videoLerpLoop);
+    }
+    requestAnimationFrame(videoLerpLoop);
+
+    // =========================================================================
+    // 2. 3D DRAGGABLE CIRCLE GALLERY FOR CERTIFICATIONS
+    // =========================================================================
+    const cylinderStage = document.getElementById('cylinder-stage');
+    const cylinderRing = document.getElementById('cylinder-ring');
+    const paginationContainer = document.getElementById('cert-pagination');
+    const autoSpinBtn = document.getElementById('auto-spin-btn');
+    const autoSpinIcon = document.getElementById('auto-spin-icon');
+    const autoSpinText = document.getElementById('auto-spin-text');
+
+    let totalCerts = CERTIFICATIONS.length;
+    let step = 360 / totalCerts;
+    let cylinderRadius = 480;
+    let currentAngle = 0;
+    let targetAngle = 0;
+    let velocity = 0;
+    let isDragging = false;
+    let startPointerX = 0;
+    let lastPointerX = 0;
+    let lastPointerTime = 0;
+    let autoSpinActive = true;
+    let activeCertIndex = 0;
+
+    function updateResponsiveRadius() {
+      const w = window.innerWidth;
+      if (w < 640) cylinderRadius = 275;
+      else if (w < 1024) cylinderRadius = 380;
+      else cylinderRadius = 480;
+      renderCylinderTransform();
+    }
+    window.addEventListener('resize', updateResponsiveRadius);
+    updateResponsiveRadius();
+
+    // Render Cards in Cylindrical Ring
+    function initCylinderDOM() {
+      cylinderRing.innerHTML = '';
+      paginationContainer.innerHTML = '';
+
+      CERTIFICATIONS.forEach((cert, i) => {
+        const cardStep = i * step;
+
+        const card = document.createElement('div');
+        card.className = "cert-card absolute top-0 left-0 w-[270px] sm:w-[320px] h-[380px] sm:h-[420px] rounded-2xl p-6 flex flex-col justify-between transition-opacity duration-200 select-none backface-hidden cursor-pointer";
+        card.id = `cert-card-${i}`;
+        card.style.background = "linear-gradient(165deg, rgba(18, 18, 24, 0.92) 0%, rgba(9, 9, 12, 0.98) 100%)";
+        card.style.backdropFilter = "blur(20px)";
+        card.style.webkitBackdropFilter = "blur(20px)";
+
+        card.innerHTML = `
+          <div class="absolute top-0 left-0 right-0 h-1.5 rounded-t-2xl" style="background: linear-gradient(90deg, transparent, ${cert.laserColor}, transparent); box-shadow: 0 0 15px ${cert.laserColor};"></div>
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-[10px] font-mono tracking-widest uppercase text-white/50 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full animate-ping" style="background-color: ${cert.laserColor};"></span>
+                VERIFIED TOKEN
+              </span>
+              <span class="text-[10px] font-mono text-white/40">#${i + 1}</span>
+            </div>
+            <h3 class="text-lg sm:text-xl font-bold font-syne text-white leading-snug line-clamp-2">${cert.title}</h3>
+            <div class="mt-2 inline-flex items-center gap-1.5 text-xs text-[#ff5252] font-semibold">
+              <i data-lucide="award" class="w-3.5 h-3.5"></i>
+              ${cert.issuer}
+            </div>
+          </div>
+          <div class="my-auto py-3 px-3.5 rounded-lg bg-black/60 border border-white/5 font-mono text-[11px] text-white/80 space-y-1.5">
+            <div class="text-[9px] text-white/40 tracking-wider">CREDENTIAL CODE:</div>
+            <div class="text-white font-medium truncate select-all">${cert.credentialCode}</div>
+          </div>
+          <div class="pt-3 border-t border-white/10 flex items-center justify-between">
+            <div class="text-[10px] font-mono text-[#00ff88]">${cert.verifiedDate}</div>
+            <div class="inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-white hover:text-[#ff1744] transition-colors">
+              <span>INSPECT</span>
+              <i data-lucide="external-link" class="w-3 h-3"></i>
+            </div>
+          </div>
+        `;
+
+        card.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (activeCertIndex === i) {
+            openCertModal(cert);
+          } else {
+            spinToCertIndex(i);
+          }
+        });
+
+        cylinderRing.appendChild(card);
+
+        // Dot
+        const dot = document.createElement('button');
+        dot.className = `cert-dot h-2 rounded-full transition-all duration-300 ${i === 0 ? 'w-8 bg-[#ff1744] shadow-[0_0_12px_#ff1744]' : 'w-2 bg-white/20'}`;
+        dot.addEventListener('click', () => spinToCertIndex(i));
+        paginationContainer.appendChild(dot);
+      });
+
+      if (window.lucide) window.lucide.createIcons();
+    }
+    initCylinderDOM();
+
+    // CRITICAL 3D CAMERA PULL-BACK TECHNIQUE:
+    // Cylinder at translateZ(-R) rotateY(angle deg)
+    // Card at translate(-50%, -50%) rotateY(i * step) translateZ(R)
+    function renderCylinderTransform() {
+      cylinderRing.style.transform = `translateZ(${-cylinderRadius}px) rotateY(${currentAngle}deg)`;
+
+      // Backface culling and active card determination
+      const normalized = ((-currentAngle % 360) + 360) % 360;
+      activeCertIndex = Math.round(normalized / step) % totalCerts;
+
+      CERTIFICATIONS.forEach((cert, i) => {
+        const card = document.getElementById(`cert-card-${i}`);
+        if (!card) return;
+
+        const cardStep = i * step;
+        card.style.transform = `translate(-50%, -50%) rotateY(${cardStep}deg) translateZ(${cylinderRadius}px)`;
+
+        const relAngle = ((((cardStep + currentAngle) % 360) + 360) % 360);
+        const rad = (relAngle * Math.PI) / 180;
+        const cosVal = Math.cos(rad);
+
+        if (cosVal < -0.15) {
+          card.style.opacity = '0';
+          card.style.pointerEvents = 'none';
+          card.style.visibility = 'hidden';
+        } else {
+          card.style.opacity = Math.max(0.25, (cosVal + 0.3) / 1.3);
+          card.style.pointerEvents = 'auto';
+          card.style.visibility = 'visible';
+        }
+
+        if (i === activeCertIndex) {
+          card.classList.add('border-2', 'border-[#ff1744]', 'shadow-[0_0_40px_rgba(196,0,36,0.35)]');
+          card.classList.remove('border-white/10');
+        } else {
+          card.classList.remove('border-2', 'border-[#ff1744]', 'shadow-[0_0_40px_rgba(196,0,36,0.35)]');
+          card.classList.add('border-white/10');
+        }
+      });
+
+      // Update dots
+      const dots = document.querySelectorAll('.cert-dot');
+      dots.forEach((dot, idx) => {
+        if (idx === activeCertIndex) {
+          dot.className = 'cert-dot h-2 rounded-full transition-all duration-300 w-8 bg-[#ff1744] shadow-[0_0_12px_#ff1744]';
+        } else {
+          dot.className = 'cert-dot h-2 rounded-full transition-all duration-300 w-2 bg-white/20 hover:bg-white/50';
+        }
+      });
+    }
+
+    // Unified Pointer Events on Cylinder Stage
+    cylinderStage.addEventListener('pointerdown', (e) => {
+      isDragging = true;
+      startPointerX = e.clientX;
+      lastPointerX = e.clientX;
+      lastPointerTime = performance.now();
+      velocity = 0;
+      try { cylinderStage.setPointerCapture(e.pointerId); } catch(err) {}
+    });
+
+    cylinderStage.addEventListener('pointermove', (e) => {
+      if (!isDragging) return;
+      const now = performance.now();
+      const dt = Math.max(1, now - lastPointerTime);
+      const dx = e.clientX - lastPointerX;
+
+      const sens = 0.35;
+      const deltaAngle = dx * sens;
+      currentAngle += deltaAngle;
+      velocity = (deltaAngle / dt) * 16.6;
+
+      lastPointerX = e.clientX;
+      lastPointerTime = now;
+      renderCylinderTransform();
+    });
+
+    function endPointerDrag(e) {
+      if (!isDragging) return;
+      isDragging = false;
+      try { cylinderStage.releasePointerCapture(e.pointerId); } catch(err) {}
+    }
+    cylinderStage.addEventListener('pointerup', endPointerDrag);
+    cylinderStage.addEventListener('pointercancel', endPointerDrag);
+
+    // RAF Physics Loop for throw inertia (0.945 damping) and gentle auto-spin (0.06°/frame)
+    function cylinderPhysicsLoop() {
+      if (!isDragging) {
+        if (Math.abs(velocity) > 0.01) {
+          currentAngle += velocity;
+          velocity *= 0.945; // Friction damping
+        } else {
+          velocity = 0;
+          if (autoSpinActive) {
+            currentAngle += 0.06;
+          }
+        }
+        renderCylinderTransform();
+      }
+      requestAnimationFrame(cylinderPhysicsLoop);
+    }
+    requestAnimationFrame(cylinderPhysicsLoop);
+
+    // Auto-Spin Toggle (guarded)
+    if (autoSpinBtn) {
+      autoSpinBtn.addEventListener('click', () => {
+        autoSpinActive = !autoSpinActive;
+        if (autoSpinActive) {
+          autoSpinBtn.className = "inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-mono uppercase tracking-wider transition-all duration-300 border bg-[#c40024]/20 border-[#ff1744]/50 text-[#ff1744] shadow-[0_0_15px_rgba(196,0,36,0.3)]";
+          if (autoSpinText) autoSpinText.textContent = "[ AUTO-SPIN ON ]";
+          if (autoSpinIcon) autoSpinIcon.setAttribute('data-lucide', 'pause');
+        } else {
+          autoSpinBtn.className = "inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-mono uppercase tracking-wider transition-all duration-300 border bg-white/5 border-white/10 text-white/60 hover:text-white";
+          if (autoSpinText) autoSpinText.textContent = "[ AUTO-SPIN PAUSED ]";
+          if (autoSpinIcon) autoSpinIcon.setAttribute('data-lucide', 'play');
+        }
+        if (window.lucide) window.lucide.createIcons();
+      });
+    }
+
+    // Spin to a specific certification card calculating shortest delta
+    function spinToCertIndex(targetIdx) {
+      const targetBase = -targetIdx * step;
+      const delta = ((((targetBase - currentAngle) % 360) + 540) % 360) - 180;
+      velocity = delta * 0.08;
+      currentAngle += delta;
+      renderCylinderTransform();
+    }
+
+    // Modal Controller
+    const modal = document.getElementById('cert-modal');
+    const modalContent = document.getElementById('cert-modal-content');
+
+    function openCertModal(cert) {
+      modalContent.innerHTML = `
+        <div class="h-1.5 w-full" style="background: linear-gradient(90deg, transparent, ${cert.laserColor}, transparent); box-shadow: 0 0 15px ${cert.laserColor};"></div>
+        <div class="flex items-center justify-between px-6 py-5 border-b border-white/10 bg-white/[0.02]">
+          <div class="flex items-center gap-3">
+            <div class="p-2 rounded-lg" style="background-color: ${cert.laserColor}20; color: ${cert.laserColor};">
+              <i data-lucide="shield-check" class="w-6 h-6"></i>
+            </div>
+            <div>
+              <div class="text-[10px] font-mono tracking-widest text-[#c40024] uppercase flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#ff1744] animate-ping"></span>
+                OFFICIAL CRYPTOGRAPHIC VERIFICATION
+              </div>
+              <h3 class="text-xl font-bold font-syne text-white tracking-wide">${cert.title}</h3>
+            </div>
+          </div>
+          <button onclick="closeCertModal()" class="p-2 text-white/60 hover:text-white rounded-lg hover:bg-white/10">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+        <div class="p-6 space-y-6 max-h-[75vh] overflow-y-auto font-space">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="p-3.5 rounded-lg bg-white/[0.03] border border-white/5">
+              <span class="text-[10px] font-mono text-white/40 uppercase block mb-1">ISSUING AUTHORITY</span>
+              <span class="text-sm font-semibold text-white flex items-center gap-1.5">${cert.issuer}</span>
+            </div>
+            <div class="p-3.5 rounded-lg bg-white/[0.03] border border-white/5">
+              <span class="text-[10px] font-mono text-white/40 uppercase block mb-1">AUDIT STATUS</span>
+              <span class="text-sm font-semibold text-[#00ff88] flex items-center gap-1.5">${cert.verifiedDate}</span>
+            </div>
+            <div class="p-3.5 rounded-lg bg-white/[0.03] border border-white/5">
+              <span class="text-[10px] font-mono text-white/40 uppercase block mb-1">CREDENTIAL TOKEN</span>
+              <span class="text-xs font-mono font-medium text-white/90 truncate block">${cert.credentialCode}</span>
+            </div>
+          </div>
+          <div class="p-4 rounded-lg bg-black/60 border border-white/10 font-mono">
+            <div class="flex items-center justify-between text-[11px] text-white/50 mb-2">
+              <span class="text-[#ff1744]">IMMUTABLE LEDGER HASH</span>
+              <span class="text-[10px] tracking-wider text-white/40">SHA-256 SECURED</span>
+            </div>
+            <div class="p-2.5 rounded bg-black text-[#00e5ff] text-[11px] break-all border border-[#00e5ff]/20 select-all">${cert.securityHash}</div>
+          </div>
+          <div>
+            <h4 class="text-xs font-mono tracking-wider uppercase text-white/60 mb-2">EXECUTIVE SUMMARY</h4>
+            <p class="text-sm text-white/80 leading-relaxed font-space">${cert.summary}</p>
+          </div>
+          <div>
+            <h4 class="text-xs font-mono tracking-wider uppercase text-white/60 mb-3">VALIDATED COMPETENCY DOMAINS</h4>
+            <div class="space-y-2">
+              ${cert.competencies.map(c => `
+                <div class="flex items-start gap-3 p-2.5 rounded-lg bg-white/[0.02] border border-white/5 text-sm text-white/90">
+                  <span class="w-2 h-2 rounded-full mt-1.5 flex-shrink-0" style="background-color: ${cert.laserColor};"></span>
+                  <span>${c}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+        <div class="px-6 py-4 border-t border-white/10 bg-white/[0.02] flex items-center justify-between">
+          <div class="text-[11px] font-mono text-white/40">SYSTEM CONFIRMED // VERIFIED</div>
+          <button onclick="closeCertModal()" class="px-5 py-2 text-xs font-mono font-semibold tracking-wider uppercase bg-[#c40024] hover:bg-[#e0002a] text-white rounded transition-colors shadow-[0_0_15px_rgba(196,0,36,0.4)]">
+            DISMISS
+          </button>
+        </div>
+      `;
+      modal.classList.remove('hidden');
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    function closeCertModal() {
+      modal.classList.add('hidden');
+    }
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeCertModal();
+    });
+
+    // =========================================================================
+    // 3. TIMELINE FILTER FUNCTIONALITY
+    // =========================================================================
+    function filterTimeline(type) {
+      document.querySelectorAll('.timeline-filter').forEach(btn => {
+        btn.className = "timeline-filter px-5 py-2 rounded-full text-xs font-mono uppercase tracking-wider transition-all duration-300 text-white/60 hover:text-white";
+      });
+      const activeBtn = document.getElementById(`filter-${type}`);
+      if (activeBtn) {
+        activeBtn.className = "timeline-filter active px-5 py-2 rounded-full text-xs font-mono uppercase tracking-wider transition-all duration-300 bg-[#c40024] text-white font-semibold shadow-[0_0_20px_rgba(196,0,36,0.6)]";
+      }
+
+      document.querySelectorAll('.timeline-card').forEach(card => {
+        const cardType = card.getAttribute('data-type');
+        if (type === 'all' || cardType === type) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    // =========================================================================
+    // 4. 3D PERSPECTIVE TILT ON PROJECT CARDS
+    // =========================================================================
+    document.querySelectorAll('.project-tilt-card').forEach(card => {
+      card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const rotateX = ((y - centerY) / centerY) * -6;
+        const rotateY = ((x - centerX) / centerX) * 6;
+        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+      });
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
+      });
+    });
+
+    // =========================================================================
+    // 5. COPY EMAIL & FORM SUBMISSION
+    // =========================================================================
+    function copyEmail() {
+      navigator.clipboard.writeText('susmitadutta130395@gmail.com');
+      const copyText = document.getElementById('copy-text');
+      const copyIcon = document.getElementById('copy-icon');
+      copyText.textContent = 'COPIED';
+      copyText.className = 'text-[#00ff88]';
+      setTimeout(() => {
+        copyText.textContent = 'COPY';
+        copyText.className = '';
+      }, 2500);
+    }
+
+    function handleFormSubmit(e) {
+      e.preventDefault();
+      const submitText = document.getElementById('submit-btn-text');
+      submitText.textContent = 'TRANSMITTED SUCCESSFULLY';
+      document.getElementById('contact-form').reset();
+      setTimeout(() => {
+        submitText.textContent = 'TRANSMIT ENCRYPTED MESSAGE';
+      }, 4000);
+    }
+
+    // Mobile Menu Toggle
+    const mobileBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    mobileBtn.addEventListener('click', () => {
+      mobileMenu.classList.toggle('hidden');
+    });
+    document.querySelectorAll('.mobile-link').forEach(link => {
+      link.addEventListener('click', () => mobileMenu.classList.add('hidden'));
+    });
+
+    // Custom Cursor Ring Follower
+    const cursorRing = document.getElementById('cursor-ring');
+    let ringX = window.innerWidth / 2;
+    let ringY = window.innerHeight / 2;
+    let targetRingX = ringX;
+    let targetRingY = ringY;
+
+    window.addEventListener('mousemove', (e) => {
+      targetRingX = e.clientX;
+      targetRingY = e.clientY;
+      if (cursorRing) cursorRing.style.opacity = '1';
+
+      const isInteractive = e.target.closest('button') || e.target.closest('a') || e.target.classList.contains('cursor-pointer');
+      if (isInteractive) {
+        cursorRing.className = "fixed top-0 left-0 w-14 h-14 -ml-7 -mt-7 rounded-full border border-[#ff1744] bg-[#ff1744]/15 shadow-[0_0_20px_rgba(255,23,68,0.5)] pointer-events-none z-[9998] transition-all duration-200 ease-out scale-110";
+      } else {
+        cursorRing.className = "fixed top-0 left-0 w-8 h-8 -ml-4 -mt-4 rounded-full border border-[#ff1744]/50 pointer-events-none z-[9998] transition-all duration-200 ease-out scale-100";
+      }
+    });
+
+    function cursorLoop() {
+      ringX += (targetRingX - ringX) * 0.18;
+      ringY += (targetRingY - ringY) * 0.18;
+      if (cursorRing) {
+        cursorRing.style.transform = `translate3d(${ringX}px, ${ringY}px, 0)`;
+      }
+      requestAnimationFrame(cursorLoop);
+    }
+    requestAnimationFrame(cursorLoop);
+
+    // Initialize Lenis Smooth Scrolling
+    if (typeof Lenis !== 'undefined') {
+      const lenis = new Lenis({
+        duration: 1.2,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        orientation: 'vertical',
+        smoothWheel: true,
+        touchMultiplier: 1.5,
+      });
+      function raf(time) {
+        lenis.raf(time);
+        requestAnimationFrame(raf);
+      }
+      requestAnimationFrame(raf);
+    }
+
+    // Initialize Lucide icons
+    if (window.lucide) {
+      window.lucide.createIcons();
+    }
+  </script>
+</body>
+</html>
 
